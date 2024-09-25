@@ -12,7 +12,8 @@ const userSchema = new Schema(
         email: {
             type: String,
             required: true,
-            trim: true
+            trim: true,
+            unique: true
         },
         password: {
             type: String,
@@ -33,6 +34,9 @@ const userSchema = new Schema(
         },
         regdNo: {
             type: Number
+        },
+        refreshToken: {
+            type: String
         }
     },{
         timestamps: true
