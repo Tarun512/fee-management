@@ -23,17 +23,9 @@ const userSchema = new Schema(
             type: String,
             required: true
         },
-        school: {
-            type: String,
-        },
-        branch: {
-            type: String
-        },
-        batch: {
-            type: String
-        },
-        regdNo: {
-            type: Number
+        roleDetails: {
+            type: Schema.Types.ObjectId,
+            refpath: 'role'
         },
         refreshToken: {
             type: String
