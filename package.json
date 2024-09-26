@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": ""
+    "dev": "nodemon api/index.js"
   },
   "keywords": [],
   "author": "",
@@ -20,5 +20,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.6.3",
     "mongoose-aggregate-paginate-v2": "^1.1.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   }
 }

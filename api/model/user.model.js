@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import { type } from "os";
 
-const studentSchema = new Schema(
+const userSchema = new Schema(
     {
         name: {
             type: String,
@@ -60,18 +60,18 @@ const studentSchema = new Schema(
     }
 )
 
-studentSchema.pre("save", async function (next) {
+userSchema.pre("save", async function (next) {
     if(!this.isModified("password")) return next();
 
     this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 
-studentSchema.methods.isPasswordCorrect = async function(password){
+userSchema.methods.isPasswordCorrect = async function(password){
     return await bcrypt.compare(password, this.password)
 }
 
-studentSchema.methods.generateAccessToken = function(){
+userSchema.methods.generateAccessToken = function(){
     return jwt.sign(
         {
             _id: this._id,
@@ -84,7 +84,7 @@ studentSchema.methods.generateAccessToken = function(){
         }
     )
 }
-studentSchema.methods.generateRefreshToken = function(){
+userSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
         {
             _id: this._id,
@@ -97,4 +97,4 @@ studentSchema.methods.generateRefreshToken = function(){
     )
 }
 
-export const Student = mongoose.model("Student", studentSchema)
+export const User = mongoose.model("user", userSchema)
