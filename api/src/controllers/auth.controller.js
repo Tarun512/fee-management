@@ -2,6 +2,7 @@ import { asyncHandler } from "../../utility/asyncHandler.js";
 import { ApiError } from "../../utility/ApiError.js";
 import { ApiResponse } from "../../utility/ApiResponse.js";
 import { User } from "../model/user.model.js";
+import jwt from 'jsonwebtoken'
 
 const generateAccessTokenAndRefreshToken = async (user) => {
     const accessToken = await user.generateAccessToken()
@@ -106,6 +107,113 @@ const loginUser = asyncHandler(async(req, res) => {
     }
 })
 
+const refreshAllTokens = asyncHandler(async(req, res) => {
+    try {
+        const userID = req.user._id;
+    
+        const user = await User.findById(userID)
+    
+        if (!user) {
+            throw new ApiError(400, "User not found")
+        }
+        const atoken = req.cookies.accessToken
+        const rtoken = req.cookies.refreshToken
+        let accessToken, refreshToken;
+        if (atoken) {
+            const decodedToken = jwt.decode(atoken, process.env.ACCESS_TOKEN_SECRET)
+            if (decodedToken.exp*1000 < Date.now() + 5*60*1000) {
+                ({accessToken, refreshToken} = await generateAccessTokenAndRefreshToken(user))
+                user.refreshToken = refreshToken;
+                await user.save({validateBeforeSave: false})
+    
+                const accessTokenoptions = {
+                    httpOnly: true,
+                    secure: true,
+                    maxAge: 3*60*60*1000
+                }
+                const refreshTokenoptions = {
+                    httpOnly: true,
+                    secure: true,
+                    maxAge: 5*60*60*1000
+                }
+                return res
+                .status(200)
+                .cookie("accessToken", accessToken, accessTokenoptions)
+                .cookie("refreshToken", refreshToken, refreshTokenoptions)
+                .json(new ApiResponse(200, null, "Cookies are successfully refreshed"))
+            } else {
+                return res.status(200).json(new ApiResponse(200, null, "Cookies are still valid"));
+            }
+        } else if(rtoken) {
+            const decodedToken = jwt.decode(rtoken, process.env.REFRESH_TOKEN_SECRET)
+            if (decodedToken.exp*1000 < Date.now() + 5*60*1000) {
+                ({accessToken, refreshToken} = await generateAccessTokenAndRefreshToken(user))
+                user.refreshToken = refreshToken;
+                await user.save({validateBeforeSave: false})
+    
+                const accessTokenoptions = {
+                    httpOnly: true,
+                    secure: true,
+                    maxAge: 3*60*60*1000
+                }
+                const refreshTokenoptions = {
+                    httpOnly: true,
+                    secure: true,
+                    maxAge: 5*60*60*1000
+                }
+                return res
+                .status(200)
+                .cookie("accessToken", accessToken, accessTokenoptions)
+                .cookie("refreshToken", refreshToken, refreshTokenoptions)
+                .json(new ApiResponse(200, null, "Cookies are successfully refreshed"))
+            } else {
+                return res.status(200).json(new ApiResponse(200, null, "Cookies are still valid"));
+            }
+        } else {
+            throw new ApiError(400, "No tokens or invalid tokens")
+        }
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({message: error.message || "Something went wrong while refreshing tokens"})
+    }
+})
+
+const logoutUser = asyncHandler(async(req, res) => {
+    const id = req.user._id;
+    try {
+        const user = await User.findByIdAndUpdate(id, 
+            {
+                $unset: {
+                    refreshToken: 1
+                }
+            },
+            {
+                new: true
+            }
+        )
+
+        if (!user) {
+            throw new ApiError(404, "Failed to Logout")
+        }
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+    
+        return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(200, null, "Logged out succssfully"))
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({message: error.message})
+    }
+})
+
 export  {
-    registerUser
+    registerUser,
+    loginUser,
+    refreshAllTokens,
+    logoutUser
 }
