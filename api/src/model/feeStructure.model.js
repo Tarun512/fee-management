@@ -41,4 +41,4 @@ const feeStructureSchema = new Schema(
         timestamps: true
     }
 )
-export const feeStructure = mongoose.model("FeeStructure",feeStructureSchema);
+export const FeeStructure = mongoose.model("FeeStructure",feeStructureSchema);
