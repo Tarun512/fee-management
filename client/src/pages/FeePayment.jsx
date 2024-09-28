@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 
-const FeePaymentForm = () => {
+const FeePaymentForm = (props) => {
   const year = new Date().getFullYear();
+  const [propsPassed,setPropsPassed] = useState(false);
   const [verify,setVerify] = useState(false);
   const [error,setError] = useState(null);
   const [formData, setFormData] = useState({
@@ -25,7 +26,10 @@ const FeePaymentForm = () => {
     batch: formData.batch,
     regNo: formData.regNo
   })
-
+  if(props.regNo !== undefined){
+    setPropsPassed(true);
+    setFormData(props);
+  }
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -65,8 +69,8 @@ const FeePaymentForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.paymentId || !formData.regNo || !formData.amountPaid || !formData.paymentMode || !formData.status) {
-      alert('Please fill all the required fields');
+    if (!formData.regNo || !formData.paymentMode || !formData.status) {
+      alert('Please fill all the required fields from submit');
       return;
     }
 
@@ -85,7 +89,9 @@ const FeePaymentForm = () => {
 
       const data = await response.json();
       console.log('Payment submitted successfully:', data);
-
+      if(propsPassed){
+        return data
+      }
       setFormData({
         school: '',
         branch: '',
@@ -125,7 +131,7 @@ const FeePaymentForm = () => {
               required
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
             >
-              <option value="">School</option>
+              <option value="">Select School</option>
               <option value="soet">SOET</option>
               <option value="som">SOM</option>
             </select>
@@ -140,7 +146,7 @@ const FeePaymentForm = () => {
               required
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
             >
-              <option value="">Branch</option>
+              <option value="">Select Branch</option>
               {formData.school === 'soet' && (
                 <>
                   <option value="btech">BTech</option>
@@ -217,7 +223,7 @@ const FeePaymentForm = () => {
             <label className="block text-gray-700">Semester Fees:</label>
             <input
               type="number"
-              name="amountPaid"
+              name="semFees"
               value={formData.semFees}
               onChange={handleChange}
               required
@@ -229,7 +235,7 @@ const FeePaymentForm = () => {
             <label className="block text-gray-700">Registration Fees:</label>
             <input
               type="number"
-              name="amountPaid"
+              name="regFees"
               value={formData.regFees}
               onChange={handleChange}
               required
@@ -274,7 +280,7 @@ const FeePaymentForm = () => {
                   name="chequeNo"
                   value={formData.chequeNo}
                   onChange={handleChange}
-                  required
+                  required={formData.paymentMode == 'cheque'? true : false}
                   className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
                 />
               </div>
@@ -285,7 +291,7 @@ const FeePaymentForm = () => {
                   name="bankName"
                   value={formData.bankName}
                   onChange={handleChange}
-                  required
+                  required={formData.paymentMode == 'cheque'? true : false}
                   className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
                 />
               </div>
@@ -301,7 +307,7 @@ const FeePaymentForm = () => {
                   name="transactionId"
                   value={formData.transactionId}
                   onChange={handleChange}
-                  required
+                  required={formData.paymentMode == 'online'? true : false}
                   className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
                 />
               </div>
@@ -312,7 +318,7 @@ const FeePaymentForm = () => {
                   name="bankName"
                   value={formData.bankName}
                   onChange={handleChange}
-                  required
+                  required={formData.paymentMode == 'online'? true : false}
                   className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
                 />
               </div>

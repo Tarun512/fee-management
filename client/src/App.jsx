@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import FeeStructureForm from './pages/FeeStructure';
 import FeePaymentForm from './pages/FeePayment';
 import Search from './pages/Search';
+import Dashboard from './pages/Dashboard';
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
         <Route path='/fee-structure' element={<FeeStructureForm/>}/>
         <Route path='/fee-payment' element={<FeePaymentForm/>}/>
         <Route path='/search' element={<Search/>}/>
+        <Route path='/dashboard' element={<Dashboard/>}/>
       </Routes>
     </BrowserRouter>
   )

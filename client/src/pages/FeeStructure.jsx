@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 
-const FeeStructureForm = () => {
+const FeeStructureForm = (props) => {
   const year = new Date().getFullYear();
+  const [propsPassed,setPropsPassed] = useState(false);
   const [formData, setFormData] = useState({
     school: '',
     branch: '',
@@ -10,9 +11,10 @@ const FeeStructureForm = () => {
     regFees: '',
     fine: ''
   });
-
-  const [branches, setBranches] = useState([]);
-
+  if(props.school !== undefined){
+    setFormData(props);
+    setPropsPassed(true);
+  }
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,17 +22,6 @@ const FeeStructureForm = () => {
       ...formData,
       [name]: value,
     });
-
-    // Update branch options when school changes
-    if (name === 'school') {
-      if (value === 'soet') {
-        setBranches(['btech', 'mtech', 'phd']);
-      } else if (value === 'som') {
-        setBranches(['bba', 'mba']);
-      } else {
-        setBranches([]);
-      }
-    }
   };
 
   // Handle form submission
@@ -42,10 +33,10 @@ const FeeStructureForm = () => {
       alert('Please fill all the fields');
       return;
     }
-
+    const url = propsPassed? 'api/user/edit-fee-structure' : 'api/user/add-fee-structure';
     // Simulate API POST request
     try {
-      const response = await fetch('https://your-backend-api.com/fee-structure', {
+      const response = await fetch({url}, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

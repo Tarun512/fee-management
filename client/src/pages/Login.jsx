@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-
+import {useNavigate} from 'react-router-dom';
 const Login = () => {
   const [loginData, setLoginData] = useState({
     email: '',
     password: '',
     role: '',
   });
-
+  const navigate = useNavigate();
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,7 +28,7 @@ const Login = () => {
 
     // Simulate API POST request
     try {
-      const response = await fetch('https://your-backend-api.com/login', {
+      const response = await fetch('/api/user/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +41,13 @@ const Login = () => {
       }
 
       const data = await response.json();
-      console.log('Login successful:', data);
+      localStorage.setItem('token',data.token);
+      if(data.role == student){
+        navigate('/fee-summary');
+      }else{
+        navigate('/staff');
+      }
+
 
       // Handle successful login (e.g., redirect or save token)
     } catch (error) {
