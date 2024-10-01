@@ -15,18 +15,14 @@ const feeStructureSchema = new Schema(
             required: true
         },
         batch: {
-            tpe: Number,
+            type: Number,
+            required: true
+        },
+        semester: {
+            type: String,
             required: true
         },
         totalFees: {
-            type: Number,
-            required: true
-        },
-        totalRegFees: {
-            type: Number,
-            required: true
-        },
-        fine: {
             type: Number,
             required: true
         },
