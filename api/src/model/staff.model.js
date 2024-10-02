@@ -1,51 +1,43 @@
-import mongoose,{Schema} from "mongoose";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import mongoose, {Schema} from "mongoose";
 
-const userSchema = new Schema(
+const staffSchema = new Schema(
     {
         name: {
             type: String,
-            required: true,
-            trim: true
+            required: true
         },
         email: {
             type: String,
-            required: true,
-            trim: true,
-            unique: true
-        },
-        password: {
-            type: String,
-            required: true,
+            required: true
         },
         role: {
             type: String,
+            enum: ['Admin', 'Accountant'],
             required: true
         },
-        roleDetails: {
-            type: Schema.Types.ObjectId,
-            refpath: 'role'
+        employeeId: {
+            type: String,
+            required: true,
+            unique: true
         },
-        refreshToken: {
-            type: String
-        }
-    },{
+    },
+    {
         timestamps: true
     }
 )
-userSchema.pre("save", async function (next) {
+
+staffSchema.pre("save", async function (next) {
     if(!this.isModified("password")) return next();
 
     this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 
-userSchema.methods.isPasswordCorrect = async function(password){
+staffSchema.methods.isPasswordCorrect = async function(password){
     return await bcrypt.compare(password, this.password)
 }
 
-userSchema.methods.generateAccessToken = function(){
+staffSchema.methods.generateAccessToken = function(){
     return jwt.sign(
         {
             _id: this._id,
@@ -59,10 +51,12 @@ userSchema.methods.generateAccessToken = function(){
         }
     )
 }
-userSchema.methods.generateRefreshToken = function(){
+
+staffSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
         {
             _id: this._id,
+            role: this.role
             
         },
         process.env.REFRESH_TOKEN_SECRET,
@@ -71,4 +65,5 @@ userSchema.methods.generateRefreshToken = function(){
         }
     )
 }
-export const User = mongoose.model("User",userSchema)
+
+export const Staff = mongoose.model("Staff", staffSchema)

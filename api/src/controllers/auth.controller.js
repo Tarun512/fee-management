@@ -2,6 +2,8 @@ import { asyncHandler } from "../../utility/asyncHandler.js";
 import { ApiError } from "../../utility/ApiError.js";
 import { ApiResponse } from "../../utility/ApiResponse.js";
 import { User } from "../model/user.model.js";
+import { Student } from "../model/student.model.js";
+import { Staff } from "../model/staff.model.js";
 import jwt from 'jsonwebtoken'
 
 const generateAccessTokenAndRefreshToken = async (user) => {
@@ -19,7 +21,7 @@ const registerUser = asyncHandler(async(req,res) => {
         }
         
         if (role == "Student") {
-            const user = await User.create({
+            const user = await Student.create({
                 name,
                 email,
                 password,
@@ -37,8 +39,9 @@ const registerUser = asyncHandler(async(req,res) => {
             .json(new ApiResponse(201, user, "Student User created successfully"))
         } else {
             if(email.includes("driems.ac.in")) {
+                const role = email.split('.',2)[1]
                 // Email verifying function call
-                const user = await User.create({
+                const user = await Staff.create({
                     name,
                     email,
                     password,
@@ -60,21 +63,33 @@ const registerUser = asyncHandler(async(req,res) => {
 
 const loginUser = asyncHandler(async(req, res) => {
     try {
-        const {name, email, password} = req.body
-        if (!name || !email || !password ) {
+        const {name, email, password, role} = req.body
+        if (!name || !email || !password || !role) {
             throw new ApiError(400, "Every field is required")
         }
-        const user = await User.findOne({email})
-    
-        if(!user) {
-            throw new ApiError(404, "User not found")
+        let user;
+        if (role === 'Student') {
+            user = Student.findOne({email})
+            if (!user) {
+                throw new ApiError(404, "User not found")
+            } else {
+                const isPasswordValid = await Student.isPasswordCorrect(password)
+                if (!isPasswordValid) {
+                    throw new ApiError(404, "Invalid Password")
+                }
+            }
+        } else {
+            user = Staff.findOne({email})
+            if (!user) {
+                throw new ApiError(404, "User not found")
+            } else {
+                const isPasswordValid = await Staff.isPasswordCorrect(password)
+                if (!isPasswordValid) {
+                    throw new ApiError(404, "Invalid Password")
+                }
+            }
         }
     
-        const isPasswordValid = await user.isPasswordCorrect(password)
-    
-        if (!isPasswordValid) {
-            throw new ApiError(404, "Invalid Password")
-        }
         const{accessToken, refreshToken} = await generateAccessTokenAndRefreshToken(user)
         user.refreshToken = refreshToken;
         await user.save({validateBeforeSave: false})
@@ -110,9 +125,14 @@ const loginUser = asyncHandler(async(req, res) => {
 const refreshAllTokens = asyncHandler(async(req, res) => {
     try {
         const userID = req.user._id;
-    
-        const user = await User.findById(userID)
-    
+        const role = req.user.role
+
+        let user
+        if (role === 'Student') {
+            user = await Student.findById(userID)
+        } else {
+            user = await Staff.findById(userID)
+            }
         if (!user) {
             throw new ApiError(400, "User not found")
         }
@@ -180,18 +200,33 @@ const refreshAllTokens = asyncHandler(async(req, res) => {
 
 const logoutUser = asyncHandler(async(req, res) => {
     const id = req.user._id;
+    const role = req.user.role
+    let user;
     try {
-        const user = await User.findByIdAndUpdate(id, 
-            {
-                $unset: {
-                    refreshToken: 1
+        if (role === 'Student') {
+            user = await Student.findByIdAndUpdate(id, 
+                {
+                    $unset: {
+                        refreshToken: 1
+                    }
+                },
+                {
+                    new: true
                 }
-            },
-            {
-                new: true
-            }
-        )
-
+            )
+        } else {
+            user = await Staff.findByIdAndUpdate(id, 
+                {
+                    $unset: {
+                        refreshToken: 1
+                    }
+                },
+                {
+                    new: true
+                }
+            )
+        }
+        
         if (!user) {
             throw new ApiError(404, "Failed to Logout")
         }
