@@ -40,7 +40,7 @@ const registerStudents = asyncHandler(async(req, res) => {
 const getStudents = asyncHandler(async(req, res) => {
     try {
         const regdId = req.body.registrationId;
-        const students = await Student.find({registrationId: regdId});
+        const students = await Student.find({registrationId: regdId}).select("-password");
         if (!students) {
             throw new ApiError(404, "No students found")
         }
