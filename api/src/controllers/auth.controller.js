@@ -21,22 +21,7 @@ const registerUser = asyncHandler(async(req,res) => {
         }
         
         if (role == "Student") {
-            const user = await Student.create({
-                name,
-                email,
-                password,
-                role,
-                school,
-                branch,
-                batch,
-                regdNo
-            })
-            if (!user) {
-                throw new ApiError(500, "Can't create the student user")
-            }
-            return res
-            .status(201)
-            .json(new ApiResponse(201, user, "Student User created successfully"))
+            throw new ApiError(400, "Student registration is not allowed")
         } else {
             if(email.includes("driems.ac.in")) {
                 const role = email.split('.',2)[1]
