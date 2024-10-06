@@ -2,7 +2,7 @@ import mongoose,{Schema} from "mongoose";
 
 const paymentSchema = new Schema({
 
-    reg_no: {
+    studentId: {
         type: Schema.Types.ObjectId,
         ref: "Student"
     },
@@ -12,14 +12,15 @@ const paymentSchema = new Schema({
     },
     date: {
         type: Number,
-        required: trusted
+        required: true
     },
     mode: {
         type: String,
-        required: true
+        required: true,
+        enum: ["Online", "Cash", "Cheque"]
     }
 },{
     timestamps: true
 })
 
-export const Payment = new mongoose.model("Payment",paymentSchema);
+export const Payment = mongoose.model("Payment",paymentSchema);

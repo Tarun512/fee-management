@@ -22,7 +22,9 @@ const studentSchema = new Schema(
         },
         role: {
             type: String,
-            required: true
+            required: true,
+            enum: ["Student"],
+            default: "Student"
         },
         registrationId: {
             type: String,
@@ -45,11 +47,15 @@ const studentSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'feeStructure'
         },
+        totalFeesPaid: {
+            type: Number,
+            default: 0
+        },
         fine: {
             type: Number,
             default: 0
         },
-        history: [
+        paymentHistory: [
             {
                 type: Schema.Types.ObjectId,
                 ref: "Payment"
