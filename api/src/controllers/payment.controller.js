@@ -7,6 +7,9 @@ import mongoose from "mongoose";
 
 const addPayment = asyncHandler(async(req, res) => {
     try {
+        if(req.user.role !== "Admin" || req.user.role !== "Accountant"){
+            throw new ApiError(403,"Forbidden");
+        }
         const { studentId, amount, date, mode } = req.body;
         if (!studentId ||!amount ||!date ||!mode) {
             throw new ApiError(400,"Please provide all required fields");
@@ -42,6 +45,9 @@ const editPayment = asyncHandler(async(req, res) => {
     const { id } = req.params;
     const {studentId, amount, date, mode} = req.body;
     try {
+        if(req.user.role !== "Admin" || req.user.role !== "Accountant"){
+            throw new ApiError(403,"Forbidden");
+        }
         if(!mongoose.Types.ObjectId.isValid(id)) {
             throw new ApiError(400,"Invalid payment id");
         }
@@ -76,6 +82,9 @@ const editPayment = asyncHandler(async(req, res) => {
 const deletePayment = asyncHandler(async(req, res) => {
     const { id } = req.params;
     try {
+        if(req.user.role !== "Admin" || req.user.role !== "Accountant"){
+            throw new ApiError(403,"Forbidden");
+        }
         const payment = await Payment.findByIdAndDelete(id);
         if (!payment) {
             throw new ApiError(400,"Payment not found");
