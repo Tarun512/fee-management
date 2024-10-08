@@ -3,8 +3,8 @@ import mongoose,{Schema} from "mongoose";
 const paymentSchema = new Schema({
 
     studentId: {
-        type: Schema.Types.ObjectId,
-        ref: "Student"
+        type: String,
+        required: true,
     },
     amount: {
         type: Number,
@@ -17,7 +17,7 @@ const paymentSchema = new Schema({
     mode: {
         type: String,
         required: true,
-        enum: ["Online", "Cash", "Cheque"]
+        enum: ["online", "cash", "cheque"]
     }
 },{
     timestamps: true

@@ -23,6 +23,10 @@ const staffSchema = new Schema(
         refreshToken: {
             type: String,
         },
+        employeeId: {
+            type: String,
+            required: true,
+        },
     },
     {
         timestamps: true

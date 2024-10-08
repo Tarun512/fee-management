@@ -9,15 +9,15 @@ router
 .post(verifyJwt,createFeesStructure);
 
 router
-.route('/delete-fee-Structure')
-.post(verifyJwt,deleteFeeStructure);
+.route('/delete-student-from-fee-structure')
+.delete(verifyJwt,deleteStudentFromFeeStructure);
 
 router
 .route('/all-fee-structures')
-.post(verifyJwt,getAllFeeStructures);
+.get(verifyJwt,getAllFeeStructures);
 
 router
-.route('/delete-student-from-fee-structure')
-.post(verifyJwt,deleteStudentFromFeeStructure);
+.route('/delete-fee-structure')
+.delete(verifyJwt,deleteFeeStructure);
 
 export default router;

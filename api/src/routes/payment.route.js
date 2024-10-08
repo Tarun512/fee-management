@@ -5,11 +5,11 @@ import { verifyJwt } from "../middlewares/userAuthorization.js";
 const router = express.Router();
 
 router
-.route("/add-Payment")
+.route("/add-payment")
 .post(verifyJwt, addPayment)
 
 router
-.route("/edit-Payment/:id")
+.route("/edit-payment/:id")
 .put(verifyJwt, editPayment)
 
 router

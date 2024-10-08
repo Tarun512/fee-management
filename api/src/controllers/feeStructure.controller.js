@@ -36,17 +36,17 @@ const createFeesStructure = asyncHandler(async(req, res) => {
     }
 })
 
-
+// tested when deleting student also delete it from fee structure
 const deleteStudentFromFeeStructure = asyncHandler(async(req, res) => {
     try {
-        const {regdId, feesStructureName} = req.body;
-        const studentToBeDeleted = await Student.findOne({regdId: regdId});
+        const {registerationId, feesStructureName} = req.body;
+        const studentToBeDeleted = await Student.findOne({registerationId});
         if(!studentToBeDeleted) {
-            throw new ApiError("Student not found", 404);
+            throw new ApiError(400,"Student not found");
         }
         const feeStructure = await FeeStructure.findOneAndUpdate({name: feesStructureName}, {$pull: {enrolled: studentToBeDeleted._id}}, {new: true, useFindAndModify: false})
         if(!feeStructure) {
-            throw new ApiError("Fee Structure not found", 404);
+            throw new ApiError(400,"Fee Structure not found");
         }
         return res
         .status(200)
@@ -58,7 +58,7 @@ const deleteStudentFromFeeStructure = asyncHandler(async(req, res) => {
         .json({message: error.message || "Internal Server Error"})
     }
 })
-
+// tested
 const getAllFeeStructures = asyncHandler(async(req, res) => {
     try {
         const feeStructures = await FeeStructure.find();
@@ -75,11 +75,11 @@ const getAllFeeStructures = asyncHandler(async(req, res) => {
         .json({message: error.message || "Internal Server Error"})
     }
 })
-
+// tested
 const deleteFeeStructure = asyncHandler(async(req, res) => {
     try {
-        const {feesStructureName} = req.body;
-        const feeStructure = await FeeStructure.findOneAndDelete({name: feesStructureName});
+        const {feeStructureName} = req.body;
+        const feeStructure = await FeeStructure.findOneAndDelete({feeStructureName});
         if(!feeStructure) {
             throw new ApiError("Fee Structure not found", 404);
         }

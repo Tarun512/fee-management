@@ -14,9 +14,9 @@ const generateAccessTokenAndRefreshToken = async (user) => {
 // tested
 const registerUser = asyncHandler(async(req,res) => {
     try {
-        const {name, email, password, role} = req.body;
+        const {name, email, password, role,employeeId} = req.body;
         console.log(req.body);
-        if (!name || !email || !password || !role) {
+        if (!name || !email || !password || !role || !employeeId) {
             throw new ApiError(400, "Every field is required")
         }
         if(email.includes("driems.ac.in")) {
@@ -32,7 +32,8 @@ const registerUser = asyncHandler(async(req,res) => {
                 name,
                 email,
                 password,
-                role
+                role,
+                employeeId
             })
             if (!user) {
                 throw new ApiError(500, "Can't create the admin or accountant user")

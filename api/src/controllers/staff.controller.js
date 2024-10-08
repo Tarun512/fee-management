@@ -49,8 +49,8 @@ const getStudents = asyncHandler(async(req, res) => {
         if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
-        const regdId = req.body.registrationId;
-        const students = await Student.find({registrationId: regdId}).select("-password");
+        const regdId = req.body.registerationId;
+        const students = await Student.find({registerationId: regdId}).select("-password");
         if (!students) {
             throw new ApiError(404, "No students found")
         }
@@ -101,7 +101,7 @@ const getStudentsWithPendingFees = asyncHandler(async(req, res) => {
                 $project: {
                     feeStructurename: 1,
                     "students.name": 1,
-                    "students.registrationId": 1,
+                    "students.registerationId": 1,
                     "students.totalFeesPaid": 1,
                     "students.fine": 1,
                     totalFees: 1,
@@ -133,7 +133,7 @@ const getStudentsWithPendingFees = asyncHandler(async(req, res) => {
         .json({messsage: error.message || "Server Error"})
     }
 })
-
+// tested
 const filterPayments = asyncHandler(async(req, res) => {
     try {
         if(req.user.role !== "admin" && req.user.role !== "accountant"){
@@ -141,8 +141,8 @@ const filterPayments = asyncHandler(async(req, res) => {
         }
         const query = req.query;
         const queryObj = {};
-        if (query.registrationId) {
-            queryObj.registrationId = query.registrationId;
+        if (query.registerationId) {
+            queryObj.registerationId = query.registerationId;
         }
         if (query.batch) {
             queryObj.batch = query.batch;
@@ -187,7 +187,7 @@ const filterPayments = asyncHandler(async(req, res) => {
             {
                 $project: {
                     studentName: "$student.name",
-                    studentRegistrationId: "$student.registrationId",
+                    studentRegisterationId: "$student.registerationId",
                     studentBatch: "$student.batch",
                     studentSchool: "$student.school",
                     studentBranch: "$student.branch",
@@ -199,9 +199,9 @@ const filterPayments = asyncHandler(async(req, res) => {
             {
                 $match: {
                     $and: [
-                        ...(queryObj.registrationId ? [{
-                            "studentRegistrationId": {
-                                $regex: queryObj.registrationId,
+                        ...(queryObj.registerationId ? [{
+                            "studentRegisterationId": {
+                                $regex: queryObj.registerationId,
                                 $options: "i"
                             }
                         }] : []),
@@ -240,14 +240,14 @@ const filterPayments = asyncHandler(async(req, res) => {
         .json({messsage: error.message || "Server Error"})
     }
 })
-
+// tested
 const deleteStudent = asyncHandler(async(req, res) => {
     try {
-        if(req.user.role !== "admin" || req.user.role !== "accountant"){
+        if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
-        const regdId = req.body.registrationId;
-        const student = await Student.findByIdAndDelete({registrationId: regdId});
+        const regdId = req.body.registerationId;
+        const student = await Student.findOneAndDelete({registerationId: regdId});
         if (!student) {
             throw new ApiError(404, "Student not found")
         }
@@ -262,7 +262,7 @@ const deleteStudent = asyncHandler(async(req, res) => {
     }
 })
 
-
+// tested
 const deleteStaff = asyncHandler(async(req, res) => {
     const role = req.user.role;
     if (role !== "admin") {

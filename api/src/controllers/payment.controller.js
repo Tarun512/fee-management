@@ -7,12 +7,18 @@ import mongoose from "mongoose";
 
 const addPayment = asyncHandler(async(req, res) => {
     try {
-        if(req.user.role !== "admin" || req.user.role !== "accountant"){
+        if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
         const { studentId, amount, date, mode } = req.body;
-        if (!studentId ||!amount ||!date ||!mode) {
+        if (!studentId || !amount || !date || !mode) {
+            console.log(req.body);
+            
             throw new ApiError(400,"Please provide all required fields");
+        }
+        const student = await Student.findOne({registerationId: studentId});
+        if (!student) {
+            throw new ApiError(400,"Student not found");
         }
         const payment = await Payment.create({
             studentId,
@@ -22,10 +28,6 @@ const addPayment = asyncHandler(async(req, res) => {
         });
         if (!payment) {
             throw new ApiError(400,"Payment could not be added");
-        }
-        const student = await Student.findOne({registrationId: studentId});
-        if (!student) {
-            throw new ApiError(400,"Student not found");
         }
         student.paymentHistory.push(payment._id);
         student.totalFeesPaid += amount;
