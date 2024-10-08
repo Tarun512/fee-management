@@ -13,7 +13,7 @@ router
 .post(verifyJwt, getStudents);
 
 router
-.route("/:id")
+.route("/pending-fees/:id")
 .post(verifyJwt, getStudentsWithPendingFees);
 
 router

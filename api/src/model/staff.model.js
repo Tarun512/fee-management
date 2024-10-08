@@ -1,5 +1,6 @@
 import mongoose, {Schema} from "mongoose";
-
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 const staffSchema = new Schema(
     {
         name: {
@@ -12,13 +13,15 @@ const staffSchema = new Schema(
         },
         role: {
             type: String,
-            enum: ['Admin', 'Accountant'],
+            enum: ['admin', 'accountant'],
             required: true
         },
-        employeeId: {
+        password: {
             type: String,
-            required: true,
-            unique: true
+            required: true
+        },
+        refreshToken: {
+            type: String,
         },
     },
     {
@@ -33,8 +36,13 @@ staffSchema.pre("save", async function (next) {
     next()
 })
 
-staffSchema.methods.isPasswordCorrect = async function(password){
-    return await bcrypt.compare(password, this.password)
+staffSchema.methods.isPasswordCorrect = async function(enteredPassword){
+    if (!enteredPassword || !this.password) {
+        console.log(enteredPassword);
+        console.log(this.password);
+        throw new Error('Missing password data for comparison');
+      }
+    return await bcrypt.compare(enteredPassword, this.password)
 }
 
 staffSchema.methods.generateAccessToken = function(){

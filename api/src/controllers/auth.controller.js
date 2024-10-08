@@ -1,7 +1,6 @@
 import { asyncHandler } from "../../utility/asyncHandler.js";
 import { ApiError } from "../../utility/ApiError.js";
 import { ApiResponse } from "../../utility/ApiResponse.js";
-import { User } from "../model/user.model.js";
 import { Student } from "../model/student.model.js";
 import { Staff } from "../model/staff.model.js";
 import jwt from 'jsonwebtoken'
@@ -12,63 +11,69 @@ const generateAccessTokenAndRefreshToken = async (user) => {
     return {accessToken, refreshToken}
 }
 
-
+// tested
 const registerUser = asyncHandler(async(req,res) => {
     try {
-        const {name, email, password, role, school, branch, batch} = req.body;
-        if (!name || !email || !password) {
+        const {name, email, password, role} = req.body;
+        console.log(req.body);
+        if (!name || !email || !password || !role) {
             throw new ApiError(400, "Every field is required")
         }
-        
-        if (role == "Student") {
-            throw new ApiError(400, "Student registration is not allowed")
-        } else {
-            if(email.includes("driems.ac.in")) {
-                const role = email.split('.',2)[1]
-                // Email verifying function call
-                const user = await Staff.create({
-                    name,
-                    email,
-                    password,
-                    role
-                })
-                if (!user) {
-                    throw new ApiError(500, "Can't create the admin or accountant user")
-                }
-                return res
-                .status(201)
-                .json(new ApiResponse(201, user, "Admin or Accountant User created successfully"))
+        if(email.includes("driems.ac.in")) {
+            const dotIndex = email.indexOf('.');
+            const atIndex = email.indexOf('@');
+            const roleFromEmail = email.substring(dotIndex + 1, atIndex);
+            console.log(roleFromEmail);
+            if(role !== roleFromEmail){
+                throw new ApiError(400,"Role must match with role in email");
             }
+            // Email verifying function call
+            const user = await Staff.create({
+                name,
+                email,
+                password,
+                role
+            })
+            if (!user) {
+                throw new ApiError(500, "Can't create the admin or accountant user")
+            }
+            return res
+            .status(201)
+            .json(new ApiResponse(201, user, `${role} created successfully`))
         }
+        
     } catch (error) {
         console.log(error)
         return res.status(500).json(error)
     }
 })
-
+// tested
 const loginUser = asyncHandler(async(req, res) => {
     try {
         const {name, email, password, role} = req.body
+        console.log(req.body);
+        
         if (!name || !email || !password || !role) {
-            throw new ApiError(400, "Every field is required")
+            throw new ApiError(400, "Every field is required in login")
         }
         let user;
         if (role === 'Student') {
-            user = Student.findOne({email})
+            user = await Student.findOne({email})
             if (!user) {
                 throw new ApiError(404, "User not found")
             } else {
-                const isPasswordValid = await Student.isPasswordCorrect(password)
+                const isPasswordValid = await user.isPasswordCorrect(password)
                 if (!isPasswordValid) {
                     throw new ApiError(404, "Invalid Password")
                 }
             }
         } else {
-            user = Staff.findOne({email})
+            user = await Staff.findOne({email})
+            console.log(user);
             if (!user) {
                 throw new ApiError(404, "User not found")
             } else {
-                const isPasswordValid = await Staff.isPasswordCorrect(password)
+                const isPasswordValid = await user.isPasswordCorrect(password)
                 if (!isPasswordValid) {
                     throw new ApiError(404, "Invalid Password")
                 }
@@ -106,7 +111,7 @@ const loginUser = asyncHandler(async(req, res) => {
         res.status(error.statusCode || 404).json(error)
     }
 })
-
+// tested
 const refreshAllTokens = asyncHandler(async(req, res) => {
     try {
         const userID = req.user._id;
@@ -118,6 +123,7 @@ const refreshAllTokens = asyncHandler(async(req, res) => {
         } else {
             user = await Staff.findById(userID)
             }
+        console.log(user);    
         if (!user) {
             throw new ApiError(400, "User not found")
         }
@@ -182,7 +188,7 @@ const refreshAllTokens = asyncHandler(async(req, res) => {
         return res.status(500).json({message: error.message || "Something went wrong while refreshing tokens"})
     }
 })
-
+// tested
 const logoutUser = asyncHandler(async(req, res) => {
     const id = req.user._id;
     const role = req.user.role

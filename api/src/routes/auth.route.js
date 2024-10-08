@@ -1,4 +1,4 @@
-import express from 'express'
+import express from 'express';
 import { registerUser, loginUser, logoutUser, refreshAllTokens} from '../controllers/auth.controller.js'
 import { verifyJwt } from '../middlewares/userAuthorization.js'
 

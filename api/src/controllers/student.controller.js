@@ -22,7 +22,6 @@ const getFeesDetails = asyncHandler( async(req, res) => {
         res.status(error.statusCode || 500).json({message: error.message || "Internal Server Error"})
     }
 })
-<<<<<<< HEAD
 
 const getPaymentHistory = asyncHandler( async(req, res) => {
     try {
@@ -39,5 +38,3 @@ const getPaymentHistory = asyncHandler( async(req, res) => {
 })
 
 export { getFeesDetails, getPaymentHistory };
-=======
->>>>>>> da2c50e86e61a9c1108998373b2207318ae060b8

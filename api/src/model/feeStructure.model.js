@@ -2,7 +2,7 @@ import mongoose,{Schema} from "mongoose";
 
 const feeStructureSchema = new Schema(
     {
-        feeStructurename: {
+        feeStructureName: {
             type: String,
             required: true
         },

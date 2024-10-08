@@ -3,12 +3,19 @@ import { ApiError } from "../../utility/ApiError.js";
 import { ApiResponse } from "../../utility/ApiResponse.js";
 import { FeeStructure } from "../model/feeStructure.model.js";
 import { Student } from "../model/student.model.js";
-
+// tested
 const createFeesStructure = asyncHandler(async(req, res) => {
     try {
-        const {name, school, branch, batch, semester, totalFees} = req.body;
+        if(req.user.role !== "admin" && req.user.role !== "accountant"){
+            throw new ApiError(400,"You can't add fees structure");
+        }
+        const {feeStructureName, school, branch, batch, semester, totalFees} = req.body;
+        if(!feeStructureName || !school || !branch || !batch || !semester || !totalFees){
+            console.log(req.body);
+            throw new ApiError(400,"Every field is required");
+        }
         const Fee_Structure = await FeeStructure.create({
-            name,
+            feeStructureName,
             school, 
             branch, 
             batch,
@@ -29,30 +36,6 @@ const createFeesStructure = asyncHandler(async(req, res) => {
     }
 })
 
-
-// const addStudentToFeeStructure = asyncHandler(async(req, res) => {
-//     try {
-//         const {regdId, feesStructureName} = req.body;
-//         // Here is regdId is an array of student regisration ids
-//         const student = await Student.find({registrationId: {$in: regdId}});
-//         if(!student) {
-//             throw new ApiError("Student not found", 404);
-//         }
-//         const studentIds = student.map(student => student._id);
-//         const feeStructure = await FeeStructure.findOneAndUpdate({name: feesStructureName}, {$addToSet: {enrolled: {$each: studentIds}}}, {new: true, useFindAndModify: false})
-//         if(!feeStructure) {
-//             throw new ApiError("Fee Structure not found", 404);
-//         }
-//         return res
-//         .status(200)
-//         .json(new ApiResponse(200, feeStructure, "Student added to Fee Structure successfully"));
-//     } catch (error) {
-//         console.log(error);
-//         res
-//         .status(error.statusCode || 500)
-//         .json({message: error.message || "Internal Server Error"})
-//     }
-// })
 
 const deleteStudentFromFeeStructure = asyncHandler(async(req, res) => {
     try {
@@ -113,7 +96,7 @@ const deleteFeeStructure = asyncHandler(async(req, res) => {
 
 export {
     createFeesStructure,
-    addStudentToFeeStructure,
+    // addStudentToFeeStructure,
     deleteStudentFromFeeStructure,
     getAllFeeStructures,
     deleteFeeStructure

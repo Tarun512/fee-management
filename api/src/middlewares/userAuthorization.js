@@ -15,11 +15,10 @@ export const verifyJwt  = asyncHandler(async(req, res, next) => {
         }
     
         const decodedToken = jwt.decode(token, process.env.ACCESS_TOKEN_SECRET)
-    
         if (!decodedToken) {
             throw new ApiError(400, "Invalid token (Error from verifyjwt)")
         }
-        if(decodedToken.role === "Student") {
+        if(decodedToken.role === "student") {
             const user = await Student.findById(decodedToken._id).select("-password -refreshToken")
             if (!user) {
                 throw new ApiError(400, "User not Found (Error from verifyjwt)")
@@ -27,7 +26,7 @@ export const verifyJwt  = asyncHandler(async(req, res, next) => {
             req.user = user;
             next();
             return
-        } else if(decodedToken.role === "Admin" || decodedToken.role === "Accountant") {
+        } else if(decodedToken.role === "admin" || decodedToken.role === "accountant") {
             const user = await Staff.findById(decodedToken._id).select("-password -refreshToken")
             if (!user) {
                 throw new ApiError(400, "User not Found (Error from verifyjwt)")

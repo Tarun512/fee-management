@@ -1,31 +1,34 @@
 import { ApiResponse } from "../../utility/ApiResponse.js";
+import { ApiError } from "../../utility/ApiError.js";
 import { asyncHandler } from "../../utility/asyncHandler.js";
 import { FeeStructure } from "../model/feeStructure.model.js";
 import { Staff } from "../model/staff.model.js";
 import { Payment } from "../model/payment.model.js";
 import { Student } from "../model/student.model.js";
 
-
+// tested
 const registerStudents = asyncHandler(async(req, res) => {
     try {
-        if(req.user.role !== "Admin" || req.user.role !== "Accountant"){
+        if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
-        const {name, email, password, role, registrationId, school, branch, batch, feeStructureName} = req.body;
-        if (!name || !email || !password || !role || !registrationId || !school || !branch || !batch) {
+        const {name, email, password, role, registerationId, school, branch, batch, feeStructureName} = req.body;
+        if (!name || !email || !password || !role || !registerationId || !school || !branch || !batch || !feeStructureName) {
+            console.log(req.body);
             throw new ApiError(400, "Every field is required")
         }
-        if (role !== "Student") {
+        if (role !== "student") {
             throw new ApiError(400, "Role should be student")
         }
-        const student = await Student.create({name, email, password, role, registrationId, school, branch, batch});
-        if (!student) {
-            throw new ApiError(400, "Failed to create student")
-        }
-        const feeStructure = await FeeStructure.findOne({name: feeStructureName});
+        const feeStructure = await FeeStructure.findOne({feeStructureName: feeStructureName});
         if (!feeStructure) {
             throw new ApiError(400, "Fee structure not found")
         }
+        const student = await Student.create({name, email, password, role, registerationId, school, branch, batch});
+        if (!student) {
+            throw new ApiError(400, "Failed to create student")
+        }
+        
         student.course = feeStructure._id;
         feeStructure.enrolled.push(student._id);
         await feeStructure.save({validateBeforeSave: false})
@@ -40,9 +43,10 @@ const registerStudents = asyncHandler(async(req, res) => {
         .json({messsage: error.message || "Server Error"})
     }
 })
+// tested
 const getStudents = asyncHandler(async(req, res) => {
     try {
-        if(req.user.role !== "Admin" || req.user.role !== "Accountant"){
+        if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
         const regdId = req.body.registrationId;
@@ -60,10 +64,12 @@ const getStudents = asyncHandler(async(req, res) => {
         .json({messsage: error.message || "Server Error"})
     }
 })
-
+// tested
 const getStudentsWithPendingFees = asyncHandler(async(req, res) => {
     try {
-        if(req.user.role !== "Admin" || req.user.role !== "Accountant"){
+        if(req.user.role !== "admin" && req.user.role !== "accountant"){
+            console.log(req.user);
+            
             throw new ApiError(403,"Forbidden");
         }
         const id = req.params.id;
@@ -130,7 +136,7 @@ const getStudentsWithPendingFees = asyncHandler(async(req, res) => {
 
 const filterPayments = asyncHandler(async(req, res) => {
     try {
-        if(req.user.role !== "Admin" || req.user.role !== "Accountant"){
+        if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
         const query = req.query;
@@ -237,7 +243,7 @@ const filterPayments = asyncHandler(async(req, res) => {
 
 const deleteStudent = asyncHandler(async(req, res) => {
     try {
-        if(req.user.role !== "Admin" || req.user.role !== "Accountant"){
+        if(req.user.role !== "admin" || req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
         const regdId = req.body.registrationId;
@@ -259,7 +265,7 @@ const deleteStudent = asyncHandler(async(req, res) => {
 
 const deleteStaff = asyncHandler(async(req, res) => {
     const role = req.user.role;
-    if (role !== "Admin") {
+    if (role !== "admin") {
         throw new ApiError(401, "Unauthorized access")
     }
     const {staffName, staffEmail} = req.body;

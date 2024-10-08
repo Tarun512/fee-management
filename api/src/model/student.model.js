@@ -23,10 +23,10 @@ const studentSchema = new Schema(
         role: {
             type: String,
             required: true,
-            enum: ["Student"],
-            default: "Student"
+            enum: ["student"],
+            default: "student"
         },
-        registrationId: {
+        registerationId: {
             type: String,
             required: true,
             unique: true
