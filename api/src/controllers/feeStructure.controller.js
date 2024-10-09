@@ -117,11 +117,37 @@ const deleteFeeStructure = asyncHandler(async(req, res) => {
     }
 })
 
+const importStudentsFromOtherFeeStructure = asyncHandler(async(req, res) => {
+    try {
+        const {fromFeeStructureName, toFeeStructureName} = req.body;
+        const [fromFeeStructure, toFeeStructure] = await Promise.all([
+            FeeStructure.findOne({name: fromFeeStructureName}),
+            FeeStructure.findOne({name: toFeeStructureName})
+        ]);
+        if(!fromFeeStructure || !toFeeStructure) {
+            throw new ApiError("Fee Structure not found", 404);
+        }
+        toFeeStructure.enrolled = [...toFeeStructure.enrolled, ...fromFeeStructure.enrolled];
+        await toFeeStructure.save();
+        fromFeeStructure.enrolled = [];
+        await fromFeeStructure.save();
+        return res
+        .status(200)
+        .json(new ApiResponse(200, toFeeStructure, "Students imported successfully"));
+    } catch (error) {
+        console.log(error);
+        res
+        .status(error.statusCode || 500)
+        .json({message: error.message || "Internal Server Error"})
+    }
+})
+
 export {
     createFeesStructure,
     editFeesStructure,
     // addStudentToFeeStructure,
     deleteStudentFromFeeStructure,
     getAllFeeStructures,
+    importStudentsFromOtherFeeStructure,
     deleteFeeStructure
 }
