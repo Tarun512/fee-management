@@ -4,22 +4,23 @@ import { asyncHandler } from "../../utility/asyncHandler.js"
 import { ApiError } from "../../utility/ApiError.js";
 import { ApiResponse } from "../../utility/ApiResponse.js";
 import mongoose from "mongoose";
-
+// tested
 const addPayment = asyncHandler(async(req, res) => {
     try {
         if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
-        const { studentId, amount, date, mode } = req.body;
-        if (!studentId || !amount || !date || !mode) {
+        const { registerationId, amount, date, mode } = req.body;
+        if (!registerationId || !amount || !date || !mode) {
             console.log(req.body);
             
             throw new ApiError(400,"Please provide all required fields");
         }
-        const student = await Student.findOne({registerationId: studentId});
+        const student = await Student.findOne({registerationId});
         if (!student) {
             throw new ApiError(400,"Student not found");
         }
+        const studentId = student._id;
         const payment = await Payment.create({
             studentId,
             amount,
@@ -42,21 +43,21 @@ const addPayment = asyncHandler(async(req, res) => {
         .json({message: error.message || "Server Error"})
     }
 })
-
+// tested need some changes with dates
 const editPayment = asyncHandler(async(req, res) => {
     const { id } = req.params;
-    const {studentId, amount, date, mode} = req.body;
+    const {registerationId, amount, date, mode} = req.body;
     try {
-        if(req.user.role !== "admin" || req.user.role !== "accountant"){
+        if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
         if(!mongoose.Types.ObjectId.isValid(id)) {
             throw new ApiError(400,"Invalid payment id");
         }
-        if (!studentId || !amount || !date || !mode) {
+        if (!registerationId || !amount || !date || !mode) {
             throw new ApiError(400,"Please provide all required fields");
         }
-        const student = await Student.findById(studentId)
+        const student = await Student.findOne({registerationId})
         if (!student) {
             throw new ApiError(400,"Student not found");
         }
@@ -66,6 +67,8 @@ const editPayment = asyncHandler(async(req, res) => {
         }
         student.totalFeesPaid -= payment.amount;
         payment.amount = amount;
+        payment.date = date;
+        payment.mode = mode;
         await payment.save({validateBeforeSave: false});
         student.totalFeesPaid += payment.amount;
         await student.save({validateBeforeSave: false});
@@ -80,11 +83,11 @@ const editPayment = asyncHandler(async(req, res) => {
         .json({message: error.message || "Server Error"})
     }
 })
-
+// tested
 const deletePayment = asyncHandler(async(req, res) => {
     const { id } = req.params;
     try {
-        if(req.user.role !== "admin" || req.user.role !== "accountant"){
+        if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
         const payment = await Payment.findByIdAndDelete(id);

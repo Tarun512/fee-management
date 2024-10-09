@@ -58,7 +58,7 @@ const loginUser = asyncHandler(async(req, res) => {
             throw new ApiError(400, "Every field is required in login")
         }
         let user;
-        if (role === 'Student') {
+        if (role === 'student') {
             user = await Student.findOne({email})
             if (!user) {
                 throw new ApiError(404, "User not found")

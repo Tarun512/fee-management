@@ -261,7 +261,7 @@ function Search() {
                   Edit
                 </button>
               )}
-              {role === 'admin' && (
+              {(role === 'admin' || (role === 'accountant' && formData.regNo != '')) && (
                 <button
                   onClick={() => handleDelete(index)}
                   className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600"

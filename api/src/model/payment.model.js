@@ -3,8 +3,8 @@ import mongoose,{Schema} from "mongoose";
 const paymentSchema = new Schema({
 
     studentId: {
-        type: String,
-        required: true,
+        type: Schema.Types.ObjectId,
+        ref: "Student"
     },
     amount: {
         type: Number,

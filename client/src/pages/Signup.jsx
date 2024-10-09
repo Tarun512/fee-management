@@ -8,30 +8,15 @@ const Signup = () => {
     password: '',
     confirmPassword: '',
     role: '',
-    regNo: '',
-    school: '',
-    branch: '',
-    batch: '',
   });
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(null);
-  const [showStudentFields, setShowStudentFields] = useState(false);
-  const year = new Date().getFullYear();
   const navigate = useNavigate();
 
   // Handle form data change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-
-    // If role is 'student', show additional fields
-    if (name === 'role' && value === 'student') {
-      setShowStudentFields(true);
-    } else if (name === 'role') {
-      setShowStudentFields(false);
-      // Reset student-specific fields when role changes
-      setFormData({ ...formData, regNo: '', school: '', branch: '', batch: '' });
-    }
   };
 
   // Submit form data
@@ -141,88 +126,11 @@ const Signup = () => {
           </select>
         </div>
 
-        {/* Conditionally render student-specific fields */}
-        {showStudentFields && (
-          <>
-            <div className="mb-4">
-              <label className="block text-gray-700">Registration No:</label>
-              <input
-                type="text"
-                name="regNo"
-                value={formData.regNo}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">School:</label>
-              <select 
-                name="school" 
-                value={formData.school} 
-                onChange={handleChange} 
-                required
-                className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-              >
-                <option value="">Select School</option>
-                <option value="soet">SOET</option>
-                <option value="som">SOM</option>
-              </select>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Branch:</label>
-              <select 
-                name="branch" 
-                value={formData.branch} 
-                onChange={handleChange} 
-                required
-                className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-              >
-                <option value="">Select Branch</option>
-                {formData.school === 'soet' && (
-                  <>
-                    <option value="btech">BTech</option>
-                    <option value="mtech">MTech</option>
-                    <option value="phd">PhD</option>
-                  </>
-                )}
-                {formData.school === 'som' && (
-                  <>
-                    <option value="bba">BBA</option>
-                    <option value="mba">MBA</option>
-                  </>
-                )}
-              </select>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Batch:</label>
-              <select 
-                name="batch" 
-                value={formData.batch} 
-                onChange={handleChange} 
-                required
-                className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-              >
-                <option value="">Select Batch</option>
-                <option value={`${year - 1}`}>{year - 1}</option>
-                <option value={`${year}`}>{year}</option>
-                <option value={`${year + 1}`}>{year + 1}</option>
-                <option value={`${year + 2}`}>{year + 2}</option>
-                <option value={`${year + 3}`}>{year + 3}</option>
-                <option value={`${year + 4}`}>{year + 4}</option>
-              </select>
-            </div>
-          </>
-        )}
-
         <button 
           type="submit" 
           className="w-full bg-blue-600 text-white text-lg font-semibold py-2 rounded-md hover:bg-blue-500 transition duration-200"
         >
-          Submit
+          Sign up
         </button>
       </form>
     </div>
