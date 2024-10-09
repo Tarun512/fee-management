@@ -46,7 +46,6 @@ const studentSchema = new Schema(
         course: {
             type: Schema.Types.ObjectId,
             ref: 'FeeStructure',
-            required: true,
         },
         totalFeesPaid: {
             type: Number,

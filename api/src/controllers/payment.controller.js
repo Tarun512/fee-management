@@ -43,7 +43,7 @@ const addPayment = asyncHandler(async(req, res) => {
         .json({message: error.message || "Server Error"})
     }
 })
-// tested need some changes with dates
+// tested
 const editPayment = asyncHandler(async(req, res) => {
     const { id } = req.params;
     const {registerationId, amount, date, mode} = req.body;

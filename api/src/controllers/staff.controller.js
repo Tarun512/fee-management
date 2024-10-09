@@ -5,7 +5,7 @@ import { FeeStructure } from "../model/feeStructure.model.js";
 import { Staff } from "../model/staff.model.js";
 import { Payment } from "../model/payment.model.js";
 import { Student } from "../model/student.model.js";
-import { deleteStudentFromFeeStructure } from "./feeStructure.controller.js";
+
 // tested
 const registerStudents = asyncHandler(async(req, res) => {
     try {
@@ -43,6 +43,7 @@ const registerStudents = asyncHandler(async(req, res) => {
         .json({messsage: error.message || "Server Error"})
     }
 })
+// tested
 const editStudent = asyncHandler(async(req,res)=>{
    try {
         if(req.user.role !== "accountant" && req.user.role !== "admin"){
@@ -69,7 +70,7 @@ const editStudent = asyncHandler(async(req,res)=>{
         if(feeStructure._id != student.course){
             const feeStructurePrevious = await FeeStructure.findOne(student.course);
             const feeStructureNameOfPrevious = feeStructurePrevious.feeStructureName
-            const studentDeleted = deleteStudentFromFeeStructure(student.registerationId,feeStructureNameOfPrevious);
+            const studentDeleted = await FeeStructure.findOneAndUpdate({feeStructureName: feeStructureNameOfPrevious},{$pull: {enrolled: student._id}},{new: true,runValidators: true});
             if(!studentDeleted){
                 throw new ApiError(400,"Student not deleted");
             }
@@ -78,9 +79,11 @@ const editStudent = asyncHandler(async(req,res)=>{
             await feeStructure.save({validateBeforeSave: false})
             await student.save({validateBeforeSave: false})
         }
-        const updatedStudent = await Student.findOneAndUpdate({id},{name, email, password, role, registerationId, school, branch, batch},{new: true,runValidators: true});
+        const updatedStudent = await Student.findByIdAndUpdate(id,{name, email, password, role, registerationId, school, branch, batch},{new: true,runValidators: true});
+        console.log(updatedStudent);
+        
         if (!updatedStudent) {
-            throw new ApiError(400, "Failed to create student")
+            throw new ApiError(400, "Failed to update student")
         }
         res
         .status(201)
@@ -288,7 +291,7 @@ const filterPayments = asyncHandler(async(req, res) => {
         .json({messsage: error.message || "Server Error"})
     }
 })
-// tested
+// tested 
 const deleteStudent = asyncHandler(async(req, res) => {
     try {
         if(req.user.role !== "admin" && req.user.role !== "accountant"){
@@ -298,6 +301,10 @@ const deleteStudent = asyncHandler(async(req, res) => {
         const student = await Student.findOneAndDelete({registerationId: regdId});
         if (!student) {
             throw new ApiError(404, "Student not found")
+        }
+        const feeStructure = await FeeStructure.findByIdAndUpdate(student.course,{$pull: {enrolled: student._id}},{new: true,runValidators: true});
+        if(!feeStructure){
+            throw new ApiError(401,"No Student found in fee Structure");
         }
         res
         .status(200)

@@ -1,12 +1,16 @@
 import express from 'express';
 import { verifyJwt } from '../middlewares/userAuthorization.js';
-import { createFeesStructure,deleteFeeStructure,getAllFeeStructures,deleteStudentFromFeeStructure, importStudentsFromOtherFeeStructure } from '../controllers/feeStructure.controller.js';
+import { createFeesStructure,deleteFeeStructure,getAllFeeStructures,deleteStudentFromFeeStructure, importStudentsFromOtherFeeStructure, editFeesStructure } from '../controllers/feeStructure.controller.js';
 
 const router = express.Router();
 
 router
 .route("/create-fee-structure")
 .post(verifyJwt,createFeesStructure);
+
+router
+.route("/edit-fee-structure/:id")
+.post(verifyJwt,editFeesStructure);
 
 router
 .route('/delete-student-from-fee-structure')

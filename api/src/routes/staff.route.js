@@ -1,5 +1,5 @@
 import express from "express";
-import { registerStudents, getStudents, getStudentsWithPendingFees, filterPayments, deleteStudent, deleteStaff } from "../controllers/staff.controller.js";
+import { registerStudents, getStudents, getStudentsWithPendingFees, filterPayments, deleteStudent, deleteStaff, editStudent } from "../controllers/staff.controller.js";
 import { verifyJwt } from "../middlewares/userAuthorization.js";
 
 const router = express.Router();
@@ -7,6 +7,10 @@ const router = express.Router();
 router
 .route("/register-students")
 .post(verifyJwt, registerStudents);
+
+router
+.route("/edit-student/:id")
+.post(verifyJwt,editStudent);
 
 router
 .route("/get-students")
