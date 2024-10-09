@@ -35,7 +35,30 @@ const createFeesStructure = asyncHandler(async(req, res) => {
         .json({message: error.message || "Internal Server Error"})
     }
 })
-
+const editFeesStructure = asyncHandler(async(req,res)=>{
+    try {
+        if(req.user.role !== "accountant" && req.user.role !== "admin"){
+            throw new ApiError(400,"You are not allowed to edit fees structure");
+        }
+        const id = req.params.id;
+        const {feeStructureName,school,branch,batch,totalFees} = req.body;
+        if (!feeStructureName || !school || !branch || !batch || !totalFees){
+            throw new ApiError(400,"Every field is required");
+        }
+        const feeStructure = await FeeStructure.findByIdAndUpdate({id},{feeStructureName,school,branch,batch,totalFees},{new: true,runValidators: true});
+        if(!feeStructure){
+            throw new ApiError(500,"Internal server error");
+        }
+        res
+        .send(201)
+        .json(new ApiResponse(201,feeStructure,"feeStructure updated successfully"));
+    
+    } catch (error) {
+        res
+        .send(error.statusCode || 400)
+        .json(error.message || "problem occurred when editing feeStructure");
+    }
+})
 // tested when deleting student also delete it from fee structure
 const deleteStudentFromFeeStructure = asyncHandler(async(req, res) => {
     try {
@@ -96,6 +119,7 @@ const deleteFeeStructure = asyncHandler(async(req, res) => {
 
 export {
     createFeesStructure,
+    editFeesStructure,
     // addStudentToFeeStructure,
     deleteStudentFromFeeStructure,
     getAllFeeStructures,
