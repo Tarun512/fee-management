@@ -24,15 +24,13 @@ const registerStudents = asyncHandler(async(req, res) => {
         if (!feeStructure) {
             throw new ApiError(400, "Fee structure not found")
         }
-        const student = await Student.create({name, email, password, role, registerationId, school, branch, batch});
+        const student = await Student.create({name, email, password, role, registerationId, school, branch, batch, course: feeStructure._id});
         if (!student) {
             throw new ApiError(400, "Failed to create student")
         }
         
-        student.course = feeStructure._id;
         feeStructure.enrolled.push(student._id);
         await feeStructure.save({validateBeforeSave: false})
-        await student.save({validateBeforeSave: false})
         res
         .status(201)
         .json(new ApiResponse(201, student, "Student created successfully"))
@@ -53,7 +51,9 @@ const editStudent = asyncHandler(async(req,res)=>{
         if(!student){
             throw new ApiError(400,"Student not found");
         }
+        console.log("Student found", student)
         const {name, email, password, role, registerationId, school, branch, batch, feeStructureName} = req.body;
+        console.log(req.body);
         if (!name || !email || !password || !role || !registerationId || !school || !branch || !batch || !feeStructureName) {
             console.log(req.body);
             throw new ApiError(400, "Every field is required")
@@ -65,27 +65,36 @@ const editStudent = asyncHandler(async(req,res)=>{
         if (!feeStructure) {
             throw new ApiError(400, "Fee structure not found")
         } 
-              //current             previous
+              //current  previous
+        let flag = false;
+        let feeStructurePrevious 
+        let deleteStudentFromPreviousFeeStructure
         if(feeStructure._id != student.course){
-            const feeStructurePrevious = await FeeStructure.findOne(student.course);
-            const feeStructureNameOfPrevious = feeStructurePrevious.feeStructureName
-            const studentDeleted = deleteStudentFromFeeStructure(student.registerationId,feeStructureNameOfPrevious);
-            if(!studentDeleted){
-                throw new ApiError(400,"Student not deleted");
+            flag = true;
+            console.log("Inside if condition")
+            feeStructurePrevious = await FeeStructure.findOne(student.course).populate("enrolled", "name registerationId");
+            console.log("The unupdated fee structure is: ",feeStructurePrevious)
+            deleteStudentFromPreviousFeeStructure = await FeeStructure.findByIdAndUpdate(feeStructurePrevious._id, { $pull: { enrolled: student._id } }, {new: true, runValidators: true}).populate("enrolled", "name registerationId");
+            if(!deleteStudentFromPreviousFeeStructure){
+                throw new ApiError(400,"Student couldn't be deleted");
             }
+            console.log("The updated fee structure is: ",deleteStudentFromPreviousFeeStructure)
             student.course = feeStructure._id;
             feeStructure.enrolled.push(student._id);
             await feeStructure.save({validateBeforeSave: false})
             await student.save({validateBeforeSave: false})
         }
-        const updatedStudent = await Student.findOneAndUpdate({id},{name, email, password, role, registerationId, school, branch, batch},{new: true,runValidators: true});
+        console.log("Flag is: ", flag)
+        console.log("After if condition")
+        const updatedStudent = await Student.findByIdAndUpdate(student._id, { $set: { name, email, password, role, registerationId, school, branch, batch } }, {new: true, runValidators: true})
         if (!updatedStudent) {
             throw new ApiError(400, "Failed to create student")
         }
         res
         .status(201)
-        .json(new ApiResponse(201, student, "Student created successfully"))
+        .json(new ApiResponse(201, {feeStructurePrevious, updatedStudent, deleteStudentFromPreviousFeeStructure}, "Student created successfully"))
    } catch (error) {
+        console.log(error)
         res
         .status(error.statusCode || 400)
         .json({message: error.message || "Internal server error"})
@@ -204,7 +213,7 @@ const filterPayments = asyncHandler(async(req, res) => {
         queryObj.startDate = query.startDate ? new Date(query.startDate) : new Date("2000-01-01");
         queryObj.endDate = query.endDate ? new Date(query.endDate) : new Date("2050-12-31");
     
-        // Ensure dates are valid
+        // Ensure dates are valid course
         if (isNaN(queryObj.startDate)) {
             queryObj.startDate = new Date("2000-01-01"); // Default start date
         }
