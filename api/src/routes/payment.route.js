@@ -1,5 +1,5 @@
 import express from "express";
-import { addPayment, editPayment, deletePayment } from "../controllers/payment.controller.js";
+import { addPayment, editPayment, deletePayment, getPayments } from "../controllers/payment.controller.js";
 import { verifyJwt } from "../middlewares/userAuthorization.js";
 
 const router = express.Router();
@@ -16,4 +16,7 @@ router
 .route("/delete-Payment/:id")
 .delete(verifyJwt, deletePayment)
 
+router
+.route("/get-payments")
+.post(verifyJwt,getPayments);
 export default router;

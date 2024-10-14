@@ -87,7 +87,7 @@ const editStudent = asyncHandler(async(req,res)=>{
         }
         res
         .status(201)
-        .json(new ApiResponse(201, student, "Student created successfully"))
+        .json(new ApiResponse(201, student, "Student updated successfully"))
    } catch (error) {
         res
         .status(error.statusCode || 400)
@@ -100,7 +100,7 @@ const getStudents = asyncHandler(async(req, res) => {
         if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
-        const regdId = req.body.registerationId;
+        const regdId = req.params.id;
         const students = await Student.find({registerationId: regdId}).select("-password");
         if (!students) {
             throw new ApiError(404, "No students found")

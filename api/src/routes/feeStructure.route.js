@@ -1,6 +1,6 @@
 import express from 'express';
 import { verifyJwt } from '../middlewares/userAuthorization.js';
-import { createFeesStructure,deleteFeeStructure,getAllFeeStructures,deleteStudentFromFeeStructure, importStudentsFromOtherFeeStructure, editFeesStructure } from '../controllers/feeStructure.controller.js';
+import { createFeesStructure,deleteFeeStructure,getAllFeeStructures,deleteStudentFromFeeStructure, importStudentsFromOtherFeeStructure, editFeesStructure, getFeeStructure } from '../controllers/feeStructure.controller.js';
 
 const router = express.Router();
 
@@ -19,6 +19,10 @@ router
 router
 .route('/import-students-to-fee-structure')
 .post(verifyJwt, importStudentsFromOtherFeeStructure)
+
+router
+.route('/get-fee-structure')
+.post(verifyJwt,getFeeStructure);
 
 router
 .route('/all-fee-structures')

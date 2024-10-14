@@ -112,8 +112,38 @@ const deletePayment = asyncHandler(async(req, res) => {
     }
 })
 
+const getPayments = asyncHandler(async(req,res)=>{
+    try {
+        const {startDate,endDate,regNo} = req.body;
+        if(!startDate && !endDate && !regNo){
+            throw new ApiError(404,"Atleast one field is required");
+        }
+        if(endDate < startDate){
+            throw new ApiError(401,"Enddate must be greater than StartDate");
+        }
+        if(regNo != null){
+            const student = await Student.findOne({registerationId: regNo});
+            if(!student){
+                throw new ApiError(401,"Student not exist");
+            }
+            const payments = await Payment.findOne({studentId: student._id,createdAt: {$gt: ISODate(`${startDate}T00:00:00Z`)},createdAt: {$lt: ISODate(`${endDate}T00:00:00Z`)}});
+            if(!payments){
+                throw new ApiError(401,"Payments not exist")
+            }
+            res
+            .status(200)
+            .json("Error occured in fee payment")
+        }
+        
+    } catch (error) {
+        res
+        .status(500 || error.statusCode)
+        .json({message: "internal server error"})
+    }
+})
 export { 
     addPayment,
     editPayment,
-    deletePayment
+    deletePayment,
+    getPayments
  };

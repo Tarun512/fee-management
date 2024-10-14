@@ -86,12 +86,34 @@ const deleteStudentFromFeeStructure = asyncHandler(async(req, res) => {
         .json({message: error.message || "Internal Server Error"})
     }
 })
+const getFeeStructure = asyncHandler(async(req,res)=>{
+    try {
+        const { feeStructureName } = req.body;
+        console.log(req.body);
+        
+        const feeStructures = await FeeStructure.findOne({feeStructureName: feeStructureName});
+        if(!feeStructures) {
+            throw new ApiError(404,"Fee Structures not found");
+        }
+        console.log(feeStructures);
+        return res
+        .status(200)
+        .json(new ApiResponse(200, feeStructures, "Fee Structures fetched successfully"));
+    } catch (error) {
+        console.log(error);
+        res
+        .status(error.statusCode || 500)
+        .json({message: error.message || "Internal Server Error"})
+    }
+})
 // tested
 const getAllFeeStructures = asyncHandler(async(req, res) => {
     try {
         const feeStructures = await FeeStructure.find();
-        if(!feeStructures) {
-            throw new ApiError("Fee Structures not found", 404);
+        console.log(feeStructures);
+        
+        if(feeStructures.length === 0) {
+            throw new ApiError(404,"Fee Structures not found --why");
         }
         return res
         .status(200)
@@ -152,6 +174,7 @@ export {
     editFeesStructure,
     // addStudentToFeeStructure,
     deleteStudentFromFeeStructure,
+    getFeeStructure,
     getAllFeeStructures,
     importStudentsFromOtherFeeStructure,
     deleteFeeStructure

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Student = () => {
+const EditStudent = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,11 +13,24 @@ const Student = () => {
     branch: "",
     batch: "",
   });
-  
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(null);
   const year = new Date().getFullYear();
   const navigate = useNavigate();
+  useEffect(() => {
+    const fetchStudent = async () => {
+      const listingId = params.Id;
+      const res = await fetch(`/api/staff/get-students/${listingId}`);
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+        return;
+      }
+      setFormData(data);
+    };
+
+    fetchStudent();
+    }, []);
   // Handle form data change
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,7 +48,7 @@ const Student = () => {
     }
 
     try {
-      const response = await fetch("/api/staff/student", {
+      const response = await fetch("/api/staff/edit-student", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
@@ -62,7 +75,7 @@ const Student = () => {
         onSubmit={handleSubmit}
         className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full"
       >
-        <h2 className="text-2xl font-bold text-center mb-6">{'Add Student'}</h2>
+        <h2 className="text-2xl font-bold text-center mb-6"> 'Edit Student'</h2>
 
         {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
@@ -203,11 +216,11 @@ const Student = () => {
           type="submit"
           className="w-full bg-blue-600 text-white text-lg font-semibold py-2 rounded-md hover:bg-blue-500 transition duration-200"
         >
-          {'Submit'}
+          Update
         </button>
       </form>
     </div>
   );
 };
 
-export default Student;
+export default EditStudent;

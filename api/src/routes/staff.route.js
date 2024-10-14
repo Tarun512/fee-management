@@ -13,7 +13,7 @@ router
 .post(verifyJwt,editStudent);
 
 router
-.route("/get-students")
+.route("/get-students/:id")
 .post(verifyJwt, getStudents);
 
 router

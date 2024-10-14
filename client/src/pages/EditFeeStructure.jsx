@@ -10,6 +10,20 @@ const FeeStructureForm = () => {
     regFees: '',
     fine: ''
   });
+  useEffect(() => {
+    const fetchFeeStructure = async () => {
+      const listingId = params.Id;
+      const res = await fetch(`/api/staff/edit-fee-structure/${listingId}`);
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+        return;
+      }
+      setFormData(data);
+    };
+
+    fetchFeeStructure();
+    }, []);
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,7 +42,7 @@ const FeeStructureForm = () => {
       alert('Please fill all the fields');
       return;
     }
-    const url = 'api/user/add-fee-structure';
+    const url =  'api/user/edit-fee-structure';
     // Simulate API POST request
     try {
       const response = await fetch({url}, {
@@ -170,7 +184,7 @@ const FeeStructureForm = () => {
           type="submit" 
           className="w-full bg-blue-600 text-white text-lg font-semibold py-2 rounded-md hover:bg-blue-500 transition duration-200"
         >
-          Submit
+          Update
         </button>
       </form>
     </div>

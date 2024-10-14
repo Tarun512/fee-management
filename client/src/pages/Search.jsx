@@ -3,26 +3,45 @@ import { useSelector } from 'react-redux';
 
 function Search() {
   const { role } = useSelector((state) => state.user);
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [cardError, setCardError] = useState(null);
   const [csv, setCsv] = useState(null);
   const year = new Date().getFullYear();
+  const [formtype,setFormType] = useState(null);
   const [formData, setFormData] = useState({
     school: '',
     branch: '',
     batch: '',
+    year: '',
+    feeStructureName:'',
     regNo: '',
     startDate: '',
     endDate: '',
     feeStructure: false
   });
 
+  const handleFormType = (e) =>{
+    setFormType(e.target.value);
+    console.log(formtype);
+  }
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: [e.target.value] });
-    if(e.target.name == 'feeStructure'){
-      formData.feeStructure = !formData.feeStructure
-    }
+    const {name,value} = e.target;
+
+    setFormData((prevFormData) => {
+      let updatedFormData = { ...prevFormData, [name]: value };
+    
+      if (name === 'feeStructure') {
+        updatedFormData.feeStructure = !prevFormData.feeStructure;
+      }
+    
+      if (['school', 'branch', 'batch', 'year'].includes(name)) {
+        updatedFormData.feeStructureName = `${updatedFormData.school}_${updatedFormData.branch}_${updatedFormData.batch}_${updatedFormData.year}`;
+      }
+      return updatedFormData;
+    });
+    
   };
 
   const handleEdit = async (index) => {
@@ -90,27 +109,99 @@ function Search() {
     URL.revokeObjectURL(url);
   };
 
+  const handleSearch = ()=>{
+    let query = `?`;
+    if (formData.startDate) query += `startDate=${formData.startDate}&`;
+    if (formData.endDate) query += `endDate=${formData.endDate}&`;
+    if (formData.regNo) query += `registerationId=${formData.regNo}`;
+    
+    // Trim any trailing '&' or '?' if unnecessary
+     query = query.endsWith('&') ? query.slice(0, -1) : query;
+     return query;
+  }
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent the default form submission
-    console.log(formData); // Log the form data for debugging
+    e.preventDefault(); 
+    console.log(formData); 
     try {
-      const response = await fetch('/api/user/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-  
-      const result = await response.json();
-  
-      if (response.ok) {
-        setData(result);
-      } else {
-        const errorText = await response.text();
-        console.error('Error:',errorText)
-        setError(errorText || 'Something went wrong');
+      if(formtype == 'student'){
+        const response = await fetch(`/api/staff/get-students/${formData.regNo}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+    
+        const result = await response.json();
+        console.log(result);
+        
+        if (response.ok) {
+          setData(result.data);
+        } else {
+          const errorText = await response.text();
+          console.error('Error:',errorText)
+          setError(errorText || 'Something went wrong');
+        }
+      }else if(formtype == 'structure' && !formData.feeStructure){
+        const response = await fetch('/api/fees/get-fee-structure', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+    
+        const result = await response.json();
+    
+        if (response.ok) {
+          setData([result.data]);
+        } else {
+          const errorText = await response.text();
+          console.error('Error:',errorText)
+          setError(errorText || 'Something went wrong');
+        }
+      }else if(formtype == 'payment'){
+        const query = handleSearch();
+        const search = query.toString();
+        console.log(search);
+        
+        const response = await fetch(`/api/staff/filter-payments/${search}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+    
+        const result = await response.json();
+    
+        if (response.ok) {
+          setData(result.data);
+        } else {
+          const errorText = await response.text();
+          console.error('Error:',errorText)
+          setError(errorText || 'Something went wrong');
+        }
+      }else if(formData.feeStructure){
+        const response = await fetch('/api/fees/all-fee-structures', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+    
+        const result = await response.json();
+    
+        if (response.ok) {
+          setData(result.data);
+        } else {
+          const errorText = await response.text();
+          console.error('Error:',errorText)
+          setError(errorText || 'Something went wrong');
+        }
       }
+      else{
+        console.log('select formtype');
+      }
+      
     } catch (error) {
       setError(`Fetch error: ${error.message}`);
       console.error('Error during fetch:', error);
@@ -121,7 +212,25 @@ function Search() {
   return (
     <>
       <form onSubmit={handleSubmit} className="p-4 bg-white shadow-md rounded-md">
-        {/* First Row: School, Branch, Batch */}
+      <p>Please select Search Type:</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+         
+          <div className='mb-4 '>
+          <input type="radio" id="type1" name="type" value="student" onChange={handleFormType}/>
+          <label htmlFor="type1">Student</label><br/>
+          </div>
+          <div className='mb-4 '>
+          <input type="radio" id="type2" name="type" value="structure" onChange={handleFormType}/>
+          <label htmlFor="type2">Fee Structure</label><br/> 
+          </div> 
+          <div className='mb-4 '>
+          <input type="radio" id="type3" name="type" value="payment" onChange={handleFormType}/>
+          <label htmlFor="type3">Fee Payment</label>
+          </div>
+        </div>
+        
+        {/* First Row: School, Branch, Batch, year, FeeStructureName*/}
+        {(formtype == 'structure') && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="mb-4">
             <label className="block text-gray-700">School:</label>
@@ -129,7 +238,7 @@ function Search() {
               name="school"
               value={formData.school}
               onChange={handleChange}
-              required
+              required = {!formData.feeStructure}
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
             >
               <option value="">School</option>
@@ -144,18 +253,18 @@ function Search() {
               name="branch"
               value={formData.branch}
               onChange={handleChange}
-              required
+              required = {!formData.feeStructure}
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
             >
-              <option value="">Branch</option>
-              {formData.school === 'soet' && (
+              <option value="">Select Branch</option>
+              {formData.school == 'soet' && (
                 <>
                   <option value="btech">BTech</option>
                   <option value="mtech">MTech</option>
                   <option value="phd">PhD</option>
                 </>
               )}
-              {formData.school === 'som' && (
+              {formData.school == 'som' && (
                 <>
                   <option value="bba">BBA</option>
                   <option value="mba">MBA</option>
@@ -170,7 +279,7 @@ function Search() {
               name="batch"
               value={formData.batch}
               onChange={handleChange}
-              required
+              required = {!formData.feeStructure}
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
             >
               <option value="">Select Batch</option>
@@ -182,50 +291,87 @@ function Search() {
               <option value={`${year + 4}`}>{year + 4}</option>
             </select>
           </div>
-        </div>
-
-        {/* Second Row: Start Date, End Date */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="mb-4">
-            <label className="block text-gray-700">Start Date:</label>
-            <input
-              type="date"
-              name="startDate"
+            <label className="block text-gray-700">Year:</label>
+            <select
+              name="year"
+              value={formData.year}
               onChange={handleChange}
+              required = {!formData.feeStructure}
+              className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
+            >
+              <option value="">Select Batch</option>
+              <option value="first">First</option>
+              <option value="second">Second</option>
+              <option value="third">Third</option>
+              <option value="fourth">Fourth</option>
+              <option value="fifth">Fifth</option>
+            </select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700">Fee Structure Name</label>
+            <input
+              type="name"
+              name="feeStructureName"
+              onChange={handleChange}
+              value={`${formData.school}_${formData.branch}_${formData.batch}_${formData.year}`}
               required
+              readOnly
               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
             />
           </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700">End Date:</label>
-            <input
-              type="date"
-              name="endDate"
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-            />
-          </div>
+          {formtype == 'structure' && 
+            <div className='mb-4 mt-8'>
+              <input type="checkbox" name="feeStructure" value={formData.feeStructure} onChange={handleChange}/>
+              <label htmlFor="feeStructure">Get All Fee Structures</label>
+            </div>
+          }
         </div>
+        )}
+        {/* Second Row: Start Date, End Date */}
+        {(formtype == 'payment') && (
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           <div className="mb-4">
+             <label className="block text-gray-700">Start Date:</label>
+             <input
+               type="date"
+               name="startDate"
+               onChange={handleChange}
+               required
+               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
+             />
+           </div>
+ 
+           <div className="mb-4">
+             <label className="block text-gray-700">End Date:</label>
+             <input
+               type="date"
+               name="endDate"
+               onChange={handleChange}
+               className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
+             />
+           </div>
+          </div>
+        )}
         {formData.startDate && formData.endDate && formData.endDate < formData.startDate && (
           <p className="text-red-600">End date must be greater than Start date</p>
         )}
-
+        
         {/* Registration Number */}
-        <div className="mb-4">
-          <label className="block text-gray-700">Registration Number:</label>
-          <input
-            type="number"
-            name="regNo"
-            value={formData.regNo}
-            onChange={handleChange}
-            min={10}
-            className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
-        {/* Fee structure check box */}
-        <input type="checkbox" name="feeStructure" value={formData.feeStructure} onChange={handleChange}/>
-        <label for="feeStructure">Fee Structure</label>
+        {(formtype == 'student' || formtype == 'payment') && 
+            <div className="mb-4">
+              <label className="block text-gray-700">Registration Number:</label>
+              <input
+                type="number"
+                name="regNo"
+                value={formData.regNo}
+                onChange={handleChange}
+                min={10}
+                className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
+              />
+            </div>
+        }
+        
         {/* Submit button */}
         {error && <p className="text-red-600">{error}</p>}
         <button
@@ -243,7 +389,7 @@ function Search() {
           Download in CSV
         </button>
 
-        {data && data.map((object, index) => (
+        {Array.isArray(data) && data.length > 0 && data.map((object, index) => (
           <div className="card p-4 mb-4 border border-gray-300 rounded-md shadow-sm" key={index}>
             {Object.keys(object).map((key) => (
               <div key={key} className="mb-2">

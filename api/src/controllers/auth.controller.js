@@ -14,9 +14,9 @@ const generateAccessTokenAndRefreshToken = async (user) => {
 // tested
 const registerUser = asyncHandler(async(req,res) => {
     try {
-        const {name, email, password, role,employeeId} = req.body;
+        const {name, email, password, role} = req.body;
         console.log(req.body);
-        if (!name || !email || !password || !role || !employeeId) {
+        if (!name || !email || !password || !role ) {
             throw new ApiError(400, "Every field is required")
         }
         if(email.includes("driems.ac.in")) {
@@ -33,14 +33,16 @@ const registerUser = asyncHandler(async(req,res) => {
                 email,
                 password,
                 role,
-                employeeId
             })
             if (!user) {
                 throw new ApiError(500, "Can't create the admin or accountant user")
             }
+            const userInstance = user.toObject();
+            delete userInstance.password;
+            delete userInstance.refreshToken;
             return res
             .status(201)
-            .json(new ApiResponse(201, user, `${role} created successfully`))
+            .json(new ApiResponse(201, userInstance, `${role} created successfully`))
         }
         
     } catch (error) {
@@ -51,10 +53,10 @@ const registerUser = asyncHandler(async(req,res) => {
 // tested
 const loginUser = asyncHandler(async(req, res) => {
     try {
-        const {name, email, password, role} = req.body
+        const { email, password, role} = req.body
         console.log(req.body);
         
-        if (!name || !email || !password || !role) {
+        if (!email || !password || !role) {
             throw new ApiError(400, "Every field is required in login")
         }
         let user;
@@ -89,7 +91,6 @@ const loginUser = asyncHandler(async(req, res) => {
         // It could've been done using the select operator while fetching the user but we are again saving the user after fetching it since we have to save refreshToken
         const userInstance = user.toObject()
         delete userInstance.password;
-        delete userInstance.refreshToken;
     
         const accessTokenoptions = {
             httpOnly: true,

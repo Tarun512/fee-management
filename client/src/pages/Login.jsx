@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import {useNavigate} from 'react-router-dom';
+import { signInStart,signInSuccess,signInFailure,signOutStart,signOutSuccess,signOutFailure } from '../redux/user/userSlice';
+import { useDispatch,useSelector } from 'react-redux';
 const Login = () => {
   const [loginData, setLoginData] = useState({
     email: '',
     password: '',
     role: '',
   });
+  const dispatch = useDispatch()
   const navigate = useNavigate();
   // Handle input changes
   const handleChange = (e) => {
@@ -25,10 +28,8 @@ const Login = () => {
       alert('Please fill all the fields');
       return;
     }
-
-    // Simulate API POST request
     try {
-      const response = await fetch('/api/user/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,26 +37,24 @@ const Login = () => {
         body: JSON.stringify(loginData),
       });
 
-      if (!response.ok) {
-        throw new Error('Login failed');
+      const responseData = await response.json();
+      if (responseData.success === false) {
+        dispatch(signInFailure(responseData.message));
+        return;
       }
-
-      const data = await response.json();
-      localStorage.setItem('token',data.token);
-      if(data.role == student){
-        navigate('/fee-summary');
+      const { data } = responseData;
+      if(data.role === 'student'){
+        navigate('/fee-details');
       }else{
-        navigate('/staff');
+        navigate('/dashboard');
       }
-
-
-      // Handle successful login (e.g., redirect or save token)
+      
+      dispatch(signInSuccess(data));
     } catch (error) {
-      console.error('Error:', error);
-      alert('Login failed. Please try again.');
+      dispatch(signInFailure(error.message));
     }
   };
-
+    
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
       <form 

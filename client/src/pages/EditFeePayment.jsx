@@ -25,6 +25,20 @@ const FeePaymentForm = () => {
     batch: formData.batch,
     regNo: formData.regNo
   })
+  useEffect(() => {
+    const fetchFeePayment = async () => {
+      const listingId = params.Id;
+      const res = await fetch(`/api/staff/edit-payment/${listingId}`);
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+        return;
+      }
+      setFormData(data);
+    };
+
+    fetchFeePayment();
+    }, []);
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -85,6 +99,7 @@ const FeePaymentForm = () => {
 
       const data = await response.json();
       console.log('Payment submitted successfully:', data);
+      
       setFormData({
         school: '',
         branch: '',

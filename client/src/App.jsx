@@ -7,7 +7,8 @@ import FeeStructureForm from './pages/FeeStructure';
 import FeePaymentForm from './pages/FeePayment';
 import Search from './pages/Search';
 import Dashboard from './pages/Dashboard';
-
+import Student from './pages/Student';
+import EditStudent from './pages/EditStudent'
 function App() {
 
   return(
@@ -17,6 +18,8 @@ function App() {
         <Route path='/' element={<Home/>}/>
         <Route path='/signup' element={<Signup/>}/>
         <Route path='/login' element={<Login/>}/>
+        <Route path='/add-student' element={<Student/>}/>
+        <Route path='/edit-student' element={<EditStudent/>}/>
         <Route path='/fee-structure' element={<FeeStructureForm/>}/>
         <Route path='/fee-payment' element={<FeePaymentForm/>}/>
         <Route path='/search' element={<Search/>}/>

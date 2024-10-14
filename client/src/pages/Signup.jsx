@@ -30,7 +30,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-type': 'application/json',
@@ -120,7 +120,6 @@ const Signup = () => {
             className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
           >
             <option value="">Select Role</option>
-            <option value="student">Student</option>
             <option value="accountant">Accountant</option>
             <option value="admin">Admin</option>
           </select>
