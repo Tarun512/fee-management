@@ -37,9 +37,8 @@ const registerUser = asyncHandler(async(req,res) => {
             if (!user) {
                 throw new ApiError(500, "Can't create the admin or accountant user")
             }
-            const userInstance = user.toObject();
+            const userInstance = user.toObject()
             delete userInstance.password;
-            delete userInstance.refreshToken;
             return res
             .status(201)
             .json(new ApiResponse(201, userInstance, `${role} created successfully`))
@@ -158,30 +157,30 @@ const refreshAllTokens = asyncHandler(async(req, res) => {
                 return res.status(200).json(new ApiResponse(200, null, "Cookies are still valid"));
             }
         } else if(rtoken) {
-            const decodedToken = jwt.decode(rtoken, process.env.REFRESH_TOKEN_SECRET)
-            if (decodedToken.exp*1000 < Date.now() + 5*60*1000) {
-                ({accessToken, refreshToken} = await generateAccessTokenAndRefreshToken(user))
-                user.refreshToken = refreshToken;
-                await user.save({validateBeforeSave: false})
+            // I removed these line 
+            //const decodedToken = jwt.decode(atoken, process.env.ACCESS_TOKEN_SECRET)
+            //if (decodedToken.exp*1000 < Date.now() + 5*60*1000)
+            // We don't need to check the expiry time of refersh token as our motive is 
+            //to refresh all tokens if the access token is expired in this ELSE block
+            ({accessToken, refreshToken} = await generateAccessTokenAndRefreshToken(user))
+            user.refreshToken = refreshToken;
+            await user.save({validateBeforeSave: false})
     
-                const accessTokenoptions = {
-                    httpOnly: true,
-                    secure: true,
-                    maxAge: 3*60*60*1000
-                }
-                const refreshTokenoptions = {
-                    httpOnly: true,
-                    secure: true,
-                    maxAge: 5*60*60*1000
-                }
-                return res
-                .status(200)
-                .cookie("accessToken", accessToken, accessTokenoptions)
-                .cookie("refreshToken", refreshToken, refreshTokenoptions)
-                .json(new ApiResponse(200, null, "Cookies are successfully refreshed"))
-            } else {
-                return res.status(200).json(new ApiResponse(200, null, "Cookies are still valid"));
+            const accessTokenoptions = {
+                httpOnly: true,
+                secure: true,
+                maxAge: 3*60*60*1000
             }
+            const refreshTokenoptions = {
+                httpOnly: true,
+                secure: true,
+                maxAge: 5*60*60*1000
+            }
+            return res
+            .status(200)
+            .cookie("accessToken", accessToken, accessTokenoptions)
+            .cookie("refreshToken", refreshToken, refreshTokenoptions)
+            .json(new ApiResponse(200, null, "Cookies are successfully refreshed"))
         } else {
             throw new ApiError(400, "No tokens or invalid tokens")
         }
