@@ -43,6 +43,10 @@ const studentSchema = new Schema(
             type: Number,
             required: true
         },
+        year: {
+            type: String,
+            required: true
+        },
         course: {
             type: Schema.Types.ObjectId,
             ref: 'FeeStructure',

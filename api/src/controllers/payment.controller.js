@@ -118,32 +118,92 @@ const getPayments = asyncHandler(async(req,res)=>{
         if(!startDate && !endDate && !regNo){
             throw new ApiError(404,"Atleast one field is required");
         }
-        if(endDate < startDate){
+        if(new Date(endDate) < new Date(startDate)){
             throw new ApiError(401,"Enddate must be greater than StartDate");
         }
-        if(regNo != null){
+        
+        
+        if(regNo != ''){
             const student = await Student.findOne({registerationId: regNo});
             if(!student){
+                console.log(req.body);
+                console.log(regNo);
                 throw new ApiError(401,"Student not exist");
             }
-            const payments = await Payment.findOne({studentId: student._id,createdAt: {$gt: ISODate(`${startDate}T00:00:00Z`)},createdAt: {$lt: ISODate(`${endDate}T00:00:00Z`)}});
+            const payments = await Payment.findOne({
+                studentId: student._id,
+                createdAt: {
+                  $gt: new Date(`${startDate}T00:00:00Z`),  // Greater than startDate
+                  $lt: new Date(`${endDate}T23:59:59Z`)     // Less than endDate (end of the day)
+                }
+              });
             if(!payments){
                 throw new ApiError(401,"Payments not exist")
             }
             res
             .status(200)
-            .json("Error occured in fee payment")
+            .json(new ApiResponse(200,payments,"Payments fetched successfully"));
         }
-        
+        if(regNo == ''){
+            const payments = await Payment.find({
+                createdAt: {
+                  $gt: new Date(`${startDate}T00:00:00Z`),  // Greater than startDate
+                  $lt: new Date(`${endDate}T23:59:59Z`)     // Less than endDate (end of the day)
+                }
+              });
+            if(!payments){
+                throw new ApiError(401,"Payments not exist")
+            }
+            res
+            .status(200)
+            .json(new ApiResponse(200,payments,"Payments fetched successfully"));
+        }
     } catch (error) {
         res
-        .status(500 || error.statusCode)
-        .json({message: "internal server error"})
+        .status(error.statusCode || 500)
+        .json({message: error.message || "internal server error"})
+    }
+})
+const getPayment = asyncHandler(async(req,res)=>{
+    try {
+        const {id} = req.params;
+        let response = await Payment.findById(id);
+        if(response.success == false){
+            throw new ApiError(401,"Payment not found");
+        }
+        const studentId = response.studentId;
+        const student = await Student.findById(studentId);
+        response = {...response._doc,registerationId: student.registerationId}
+        res
+        .status(response.statusCode || 200)
+        .json(new ApiResponse(200,response,"Payment fetched successfully"))
+    } catch (error) {
+        res
+        .status(error.statusCode || 500)
+        .json({message: error.message || "internal server error"})
+    }
+})
+const handleVerify = asyncHandler(async(req,res)=>{
+    try {
+        const {registerationId} = req.params;
+        const response = await Student.findOne({registerationId: registerationId});
+        if(response.success == false){
+            throw new ApiError(400,"RegisterationId is not exist");
+        }
+        res
+        .status(response.statusCode || 200)
+        .json(new ApiResponse(200,response,"Student fetched successfully"));
+    } catch (error) {
+        res
+        .status(error.statusCode || 500)
+        .json({message: error.message || "Internal server error"})
     }
 })
 export { 
     addPayment,
     editPayment,
     deletePayment,
-    getPayments
+    getPayments,
+    getPayment,
+    handleVerify
  };

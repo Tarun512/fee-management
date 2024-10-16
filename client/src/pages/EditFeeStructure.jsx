@@ -1,24 +1,27 @@
-import React, { useState } from 'react';
-
-const FeeStructureForm = () => {
+import React, { useEffect,useState } from 'react';
+import {useParams} from 'react-router-dom';
+const EditFeeStructureForm = () => {
   const year = new Date().getFullYear();
+  const params = useParams();
   const [formData, setFormData] = useState({
+    feeStructureName: '',
     school: '',
     branch: '',
     batch: '',
-    totalAmount: '',
-    regFees: '',
-    fine: ''
+    year: '',
+    totalFees: ''
   });
   useEffect(() => {
     const fetchFeeStructure = async () => {
-      const listingId = params.Id;
-      const res = await fetch(`/api/staff/edit-fee-structure/${listingId}`);
-      const data = await res.json();
-      if (data.success === false) {
+      const listingId = params.id;  
+      const response = await fetch(`/api/fees/get-fee-structure/${listingId}`);
+      const responseData = await response.json();
+      const data = responseData.data;
+      if (responseData.success === false) {
         console.log(data.message);
         return;
       }
+      console.log(data);
       setFormData(data);
     };
 
@@ -36,25 +39,26 @@ const FeeStructureForm = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Check if all fields are filled
-    if (!formData.school || !formData.branch || !formData.batch || !formData.totalAmount || !formData.regFees || !formData.fine) {
+    if (!formData.feeStructureName || !formData.school || !formData.branch || !formData.batch || !formData.totalFees || !formData.year ) {
       alert('Please fill all the fields');
       return;
     }
-    const url =  'api/user/edit-fee-structure';
-    // Simulate API POST request
+    const id = params.id
+    console.log(id);
+    
+    // const url =  `api/fees/edit-fee-structure/${id}`;
     try {
-      const response = await fetch({url}, {
-        method: 'POST',
+      const response = await fetch(`/api/fees/edit-fee-structure/${id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
-
+      console.log(response);
+      
       if (!response.ok) {
-        throw new Error('Failed to submit fee structure');
+        throw new Error('Failed to update fee structure');
       }
 
       const data = await response.json();
@@ -62,16 +66,16 @@ const FeeStructureForm = () => {
 
       // Handle successful submission (e.g., reset form, show confirmation)
       setFormData({
+        feeStructureName: '',
         school: '',
         branch: '',
         batch: '',
-        totalAmount: '',
-        regFees: '',
-        fine: ''
+        totalFees: '',
+        year: '',
       });
     } catch (error) {
       console.error('Error:', error);
-      alert('Submission failed. Please try again.');
+      alert('Updation failed. Please try again.');
     }
   };
 
@@ -83,6 +87,18 @@ const FeeStructureForm = () => {
       >
         <h2 className="text-2xl font-bold text-center mb-6">Fee Structure Form</h2>
 
+        {/* fee Structure Name */}
+        <label className='block text-gray-700'>Fee Structure Name:</label>
+        <input 
+        type="text" 
+        name='feeStructureName'
+        value={formData.feeStructureName}
+        required
+        onChange={handleChange}
+        className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
+        />
+
+        {/* School */}
         <div className="mb-4">
               <label className="block text-gray-700">School:</label>
               <select 
@@ -97,7 +113,7 @@ const FeeStructureForm = () => {
                 <option value="som">SOM</option>
               </select>
             </div>
-
+            {/* Branch */}
             <div className="mb-4">
               <label className="block text-gray-700">Branch:</label>
               <select 
@@ -123,7 +139,7 @@ const FeeStructureForm = () => {
                 )}
               </select>
             </div>
-
+            {/* Batch */}
             <div className="mb-4">
               <label className="block text-gray-700">Batch:</label>
               <select 
@@ -143,52 +159,46 @@ const FeeStructureForm = () => {
                 <option value={`${year + 5}`}>{year + 5}</option>
               </select>
             </div>
+            {/* Year */}
+            <div className="mb-4">
+              <label className="block text-gray-700">Year:</label>
+              <select 
+                name="year" 
+                value={formData.year} 
+                onChange={handleChange} 
+                required
+                className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
+              >
+                <option value="">Select Year</option>
+                <option value={`first`}>first</option>
+                <option value={`second`}>second</option>
+                <option value={`third`}>third</option>
+                <option value={`fourth`}>fourth</option>
+                <option value={`fifth`}>fifth</option>
+              </select>
+            </div>
+            {/* Total Fees */}
+            <div className="mb-4">
+              <label className="block text-gray-700">Total Fees:</label>
+              <input
+                type="number"
+                name="totalFees"
+                value={formData.totalFees}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
+              />
+            </div>
 
-        <div className="mb-4">
-          <label className="block text-gray-700">Total Amount:</label>
-          <input
-            type="number"
-            name="totalAmount"
-            value={formData.totalAmount}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Registration Fees:</label>
-          <input
-            type="number"
-            name="regFees"
-            value={formData.regFees}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Fine:</label>
-          <input
-            type="number"
-            name="fine"
-            value={formData.fine}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
-
-        <button 
-          type="submit" 
-          className="w-full bg-blue-600 text-white text-lg font-semibold py-2 rounded-md hover:bg-blue-500 transition duration-200"
-        >
-          Update
-        </button>
+            <button 
+              type="submit" 
+              className="w-full bg-blue-600 text-white text-lg font-semibold py-2 rounded-md hover:bg-blue-500 transition duration-200"
+            >
+            Update
+          </button>
       </form>
     </div>
   );
 };
 
-export default FeeStructureForm;
+export default EditFeeStructureForm;

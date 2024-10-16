@@ -8,10 +8,11 @@ const Student = () => {
     password: "",
     confirmPassword: "",
     role: "",
-    regNo: "",
+    registerationId: "",
     school: "",
     branch: "",
     batch: "",
+    year: "",
   });
   
   const [error, setError] = useState(false);
@@ -35,7 +36,7 @@ const Student = () => {
     }
 
     try {
-      const response = await fetch("/api/staff/student", {
+      const response = await fetch("/api/staff/register-students", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
@@ -131,8 +132,8 @@ const Student = () => {
           <label className="block text-gray-700">Registration No:</label>
           <input
             type="text"
-            name="regNo"
-            value={formData.regNo}
+            name="registerationId"
+            value={formData.registerationId}
             onChange={handleChange}
             required
             className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
@@ -198,7 +199,23 @@ const Student = () => {
             <option value={`${year + 4}`}>{year + 4}</option>
           </select>
         </div>
-
+        <div className="mb-4">
+          <label className="block text-gray-700">Batch:</label>
+          <select
+            name="year"
+            value={formData.year}
+            onChange={handleChange}
+            required
+            className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
+          >
+            <option value="">Select Batch</option>
+            <option value={`first`}>first</option>
+            <option value={`second`}>second</option>
+            <option value={`third`}>third</option>
+            <option value={`fourth`}>fourth</option>
+            <option value={`fifth`}>fifth</option>
+          </select>
+        </div>
         <button
           type="submit"
           className="w-full bg-blue-600 text-white text-lg font-semibold py-2 rounded-md hover:bg-blue-500 transition duration-200"

@@ -1,5 +1,5 @@
 import express from "express";
-import { registerStudents, getStudents, getStudentsWithPendingFees, filterPayments, deleteStudent, deleteStaff, editStudent } from "../controllers/staff.controller.js";
+import { registerStudents, getStudent, getStudentsWithPendingFees, filterPayments, deleteStudent, deleteStaff, editStudent, getStudentByForm } from "../controllers/staff.controller.js";
 import { verifyJwt } from "../middlewares/userAuthorization.js";
 
 const router = express.Router();
@@ -13,8 +13,12 @@ router
 .post(verifyJwt,editStudent);
 
 router
-.route("/get-students/:id")
-.post(verifyJwt, getStudents);
+.route("/get-student/:id")
+.get(verifyJwt, getStudent);
+
+router
+.route("/get-student-by-form")
+.post(verifyJwt, getStudentByForm);
 
 router
 .route("/pending-fees/:id")
@@ -25,7 +29,7 @@ router
 .get(verifyJwt, filterPayments);
 
 router
-.route("/delete-student")
+.route("/delete-student/:id")
 .delete(verifyJwt, deleteStudent);
 
 router

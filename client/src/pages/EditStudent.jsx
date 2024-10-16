@@ -1,32 +1,48 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect,useState } from "react";
+import { useNavigate,useParams } from "react-router-dom";
 
 const EditStudent = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
     role: "",
-    regNo: "",
+    registerationId: "",
     school: "",
     branch: "",
     batch: "",
+    year: "",
   });
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(null);
   const year = new Date().getFullYear();
   const navigate = useNavigate();
+  const params = useParams();
   useEffect(() => {
     const fetchStudent = async () => {
-      const listingId = params.Id;
-      const res = await fetch(`/api/staff/get-students/${listingId}`);
-      const data = await res.json();
-      if (data.success === false) {
+      const listingId = params.id;
+      const response = await fetch(`/api/staff/get-student/${listingId}`);
+      const responseData = await response.json();
+      console.log(responseData);
+      
+      if (responseData.success === false) {
         console.log(data.message);
         return;
       }
-      setFormData(data);
+      const data = responseData.data;
+      console.log(data);
+      
+      setFormData({
+        name: data.name,
+        email: data.email,
+        password: "",
+        role: data.role,
+        registerationId: data.registerationId,
+        school: data.school,
+        branch: data.branch,
+        batch: data.batch,
+        year: data.year,
+      });
     };
 
     fetchStudent();
@@ -40,15 +56,9 @@ const EditStudent = () => {
   // Submit form data
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Ensure password and confirmPassword match
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-
+    const id = params.id;
     try {
-      const response = await fetch("/api/staff/edit-student", {
+      const response = await fetch(`/api/staff/edit-student/${id}`, {
         method: "POST",
         headers: {
           "Content-type": "application/json",
@@ -110,19 +120,6 @@ const EditStudent = () => {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Confirm Password:</label>
-          <input
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
             className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
           />
         </div>
@@ -144,8 +141,8 @@ const EditStudent = () => {
           <label className="block text-gray-700">Registration No:</label>
           <input
             type="text"
-            name="regNo"
-            value={formData.regNo}
+            name="registerationId"
+            value={formData.registerationId}
             onChange={handleChange}
             required
             className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
@@ -211,7 +208,24 @@ const EditStudent = () => {
             <option value={`${year + 4}`}>{year + 4}</option>
           </select>
         </div>
-
+        <div className="mb-4">
+          <label className="block text-gray-700">Year:</label>
+          <select
+            name="year"
+            value={formData.year}
+            onChange={handleChange}
+            required
+            className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
+          >
+            <option value="">Select Batch</option>
+            <option value={`first`}>first</option>
+            <option value={`second`}>second</option>
+            <option value={`third`}>third</option>
+            <option value={`fourth`}>fourth</option>
+            <option value={`fifth`}>fifth</option>
+           
+          </select>
+        </div>
         <button
           type="submit"
           className="w-full bg-blue-600 text-white text-lg font-semibold py-2 rounded-md hover:bg-blue-500 transition duration-200"

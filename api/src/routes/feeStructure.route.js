@@ -1,6 +1,6 @@
 import express from 'express';
 import { verifyJwt } from '../middlewares/userAuthorization.js';
-import { createFeesStructure,deleteFeeStructure,getAllFeeStructures,deleteStudentFromFeeStructure, importStudentsFromOtherFeeStructure, editFeesStructure, getFeeStructure } from '../controllers/feeStructure.controller.js';
+import { createFeesStructure,deleteFeeStructure,getAllFeeStructures,deleteStudentFromFeeStructure, importStudentsFromOtherFeeStructure, editFeesStructure, getFeeStructure, getFeeStructureByForm } from '../controllers/feeStructure.controller.js';
 
 const router = express.Router();
 
@@ -10,7 +10,7 @@ router
 
 router
 .route("/edit-fee-structure/:id")
-.post(verifyJwt,editFeesStructure);
+.put(verifyJwt,editFeesStructure);
 
 router
 .route('/delete-student-from-fee-structure')
@@ -21,15 +21,19 @@ router
 .post(verifyJwt, importStudentsFromOtherFeeStructure)
 
 router
-.route('/get-fee-structure')
-.post(verifyJwt,getFeeStructure);
+.route('/get-fee-structure/:id')
+.get(verifyJwt,getFeeStructure);
+
+router
+.route('/get-fee-structure-by-form')
+.post(verifyJwt,getFeeStructureByForm);
 
 router
 .route('/all-fee-structures')
 .get(verifyJwt,getAllFeeStructures);
 
 router
-.route('/delete-fee-structure')
+.route('/delete-fee-structure/:id')
 .delete(verifyJwt,deleteFeeStructure);
 
 export default router;

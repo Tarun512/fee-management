@@ -1,5 +1,7 @@
+import { json } from 'body-parser';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 function Search() {
   const { role } = useSelector((state) => state.user);
@@ -9,6 +11,7 @@ function Search() {
   const [csv, setCsv] = useState(null);
   const year = new Date().getFullYear();
   const [formtype,setFormType] = useState(null);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     school: '',
     branch: '',
@@ -45,45 +48,72 @@ function Search() {
   };
 
   const handleEdit = async (index) => {
-    try {
-      const response = await fetch('/api/user/fee-payment/edit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data[index]),
-      });
-      const result = await response.json();
-      if (response.ok) {
-        setData(() => {
-          data[index] = result.rows[0];
-        });
-      } else {
-        setCardError(result.message);
-      }
-    } catch (error) {
-      setCardError(error.message);
-    }
+      console.log(data[index]?._id);
+      console.log(formtype);
+      if(formtype == 'payment'){
+        navigate(`/edit-payment/${data[index]?._id}`)
+        } 
+      if(formtype == 'structure'){
+        navigate(`/edit-structure/${data[index]?._id}`)
+        } 
+      if(formtype == 'student'){
+        navigate(`/edit-student/${data[index]?._id}`)
+        }     
   };
 
   const handleDelete = async (index) => {
     try {
-      const response = await fetch('/api/user/fee-payment/delete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data[index]),
-      });
-      const result = await response.json();
-      if (response.ok) {
-        const updatedCards = data.filter((_, i) => i !== index);
-        setData(updatedCards);
-      } else {
-        setCardError(result.message);
+      alert("Are you sure you want to delete");
+      if(formtype == 'student'){
+        console.log(data[index]?._id);
+        
+        const response = await fetch(`/api/staff/delete-student/${data[index]?._id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const result = await response.json();
+        if (response.ok) {
+          const updatedCards = data.filter((_, i) => i !== index);
+          setData(updatedCards);
+        } else {
+          setCardError(result.message);
+        }
       }
+      if(formtype == 'structure'){
+        const response = await fetch(`/api/fees/delete-fee-structure/${data[index]?._id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const result = await response.json();
+        if (response.ok) {
+          const updatedCards = data.filter((_, i) => i !== index);
+          setData(updatedCards);
+        } else {
+          setCardError(result.message);
+        }
+      }
+      if(formtype == 'payment'){
+        const response = await fetch(`/api/payment/delete-payment/${data[index]?._id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const result = await response.json();
+        if (response.ok) {
+          const updatedCards = data.filter((_, i) => i !== index);
+          setData(updatedCards);
+        } else {
+          setCardError(result.message);
+        }
+      }
+      
     } catch (error) {
-      setCardError(result.message);
+      setCardError(error.message);
     }
   };
 
@@ -109,40 +139,41 @@ function Search() {
     URL.revokeObjectURL(url);
   };
 
-  const handleSearch = ()=>{
-    let query = `?`;
-    if (formData.startDate) query += `startDate=${formData.startDate}&`;
-    if (formData.endDate) query += `endDate=${formData.endDate}&`;
-    if (formData.regNo) query += `registerationId=${formData.regNo}`;
+  // const handleSearch = ()=>{
+  //   let query = `?`;
+  //   if (formData.startDate) query += `startDate=${formData.startDate}&`;
+  //   if (formData.endDate) query += `endDate=${formData.endDate}&`;
+  //   if (formData.regNo) query += `registerationId=${formData.regNo}`;
     
-    // Trim any trailing '&' or '?' if unnecessary
-     query = query.endsWith('&') ? query.slice(0, -1) : query;
-     return query;
-  }
+  //   // Trim any trailing '&' or '?' if unnecessary
+  //    query = query.endsWith('&') ? query.slice(0, -1) : query;
+  //    return query;
+  // }
   const handleSubmit = async (e) => {
     e.preventDefault(); 
     console.log(formData); 
     try {
       if(formtype == 'student'){
-        const response = await fetch(`/api/staff/get-students/${formData.regNo}`, {
+        const response = await fetch('/api/staff/get-student-by-form', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          body:JSON.stringify(formData)
         });
     
         const result = await response.json();
         console.log(result);
         
         if (response.ok) {
-          setData(result.data);
+          setData([result.data]);
         } else {
           const errorText = await response.text();
           console.error('Error:',errorText)
           setError(errorText || 'Something went wrong');
         }
       }else if(formtype == 'structure' && !formData.feeStructure){
-        const response = await fetch('/api/fees/get-fee-structure', {
+        const response = await fetch('/api/fees/get-fee-structure-by-form', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -154,25 +185,28 @@ function Search() {
     
         if (response.ok) {
           setData([result.data]);
+          setError(null);
         } else {
           const errorText = await response.text();
           console.error('Error:',errorText)
           setError(errorText || 'Something went wrong');
         }
       }else if(formtype == 'payment'){
-        const query = handleSearch();
-        const search = query.toString();
-        console.log(search);
+        // const query = handleSearch();
+        // const search = query.toString();
+        // console.log(search);
         
-        const response = await fetch(`/api/staff/filter-payments/${search}`, {
-          method: 'GET',
+        const response = await fetch('/api/payment/get-payments', {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify(formData),
         });
     
         const result = await response.json();
-    
+        console.log(result);
+        
         if (response.ok) {
           setData(result.data);
         } else {

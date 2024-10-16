@@ -9,17 +9,18 @@ const createFeesStructure = asyncHandler(async(req, res) => {
         if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(400,"You can't add fees structure");
         }
-        const {feeStructureName, school, branch, batch, semester, totalFees} = req.body;
-        if(!feeStructureName || !school || !branch || !batch || !semester || !totalFees){
+        const {school, branch, batch, year, totalFees} = req.body;
+        if(!school || !branch || !batch || !year || !totalFees){
             console.log(req.body);
             throw new ApiError(400,"Every field is required");
         }
+        const feeStructureName = `${school}_${branch}_${batch}_${year}`;
         const Fee_Structure = await FeeStructure.create({
             feeStructureName,
             school, 
             branch, 
             batch,
-            semester, 
+            year, 
             totalFees
         })
         if(!Fee_Structure) {
@@ -46,11 +47,11 @@ const editFeesStructure = asyncHandler(async(req,res)=>{
         if(!feeStructureExist){
             throw new ApiError(400,"FeeStructure not exist");
         }
-        const {feeStructureName,school,branch,batch,totalFees} = req.body;
-        if (!feeStructureName || !school || !branch || !batch || !totalFees){
+        const {feeStructureName,school,branch,batch,year,totalFees} = req.body;
+        if (!feeStructureName || !school || !branch || !batch || !year || !totalFees){
             throw new ApiError(400,"Every field is required");
         }
-        const feeStructure = await FeeStructure.findByIdAndUpdate(id,{feeStructureName,school,branch,batch,totalFees},{new: true,runValidators: true});
+        const feeStructure = await FeeStructure.findByIdAndUpdate(id,{feeStructureName,school,branch,batch,year,totalFees},{new: true,runValidators: true});
         if(!feeStructure){
             throw new ApiError(500,"Internal server error");
         }
@@ -88,10 +89,13 @@ const deleteStudentFromFeeStructure = asyncHandler(async(req, res) => {
 })
 const getFeeStructure = asyncHandler(async(req,res)=>{
     try {
-        const { feeStructureName } = req.body;
-        console.log(req.body);
+        // const { feeStructureName } = req.body;
+        // console.log(req.body);
         
-        const feeStructures = await FeeStructure.findOne({feeStructureName: feeStructureName});
+        const {id} = req.params;
+        console.log(id);
+        
+        const feeStructures = await FeeStructure.findById(id);
         if(!feeStructures) {
             throw new ApiError(404,"Fee Structures not found");
         }
@@ -106,6 +110,31 @@ const getFeeStructure = asyncHandler(async(req,res)=>{
         .json({message: error.message || "Internal Server Error"})
     }
 })
+
+const getFeeStructureByForm = asyncHandler(async(req,res)=>{
+    try {
+        // const { feeStructureName } = req.body;
+        // console.log(req.body);
+        const {school,branch,batch,year,feeStructureName} = req.body;
+        if(!school || !branch || !batch || !year || !feeStructureName){
+            throw new ApiError(400,"Every field is required");
+        }
+        const feeStructures = await FeeStructure.findOne({feeStructureName});
+        if(!feeStructures) {
+            throw new ApiError(404,"Fee Structures not found");
+        }
+        console.log(feeStructures);
+        return res
+        .status(200)
+        .json(new ApiResponse(200, feeStructures, "Fee Structures fetched successfully"));
+    } catch (error) {
+        console.log(error);
+        res
+        .status(error.statusCode || 500)
+        .json({message: error.message || "Internal Server Error"})
+    }
+})
+
 // tested
 const getAllFeeStructures = asyncHandler(async(req, res) => {
     try {
@@ -128,8 +157,8 @@ const getAllFeeStructures = asyncHandler(async(req, res) => {
 // tested
 const deleteFeeStructure = asyncHandler(async(req, res) => {
     try {
-        const {feeStructureName} = req.body;
-        const feeStructure = await FeeStructure.findOneAndDelete({feeStructureName});
+        const id = req.params.id
+        const feeStructure = await FeeStructure.findByIdAndDelete(id);
         if(!feeStructure) {
             throw new ApiError("Fee Structure not found", 404);
         }
@@ -175,6 +204,7 @@ export {
     // addStudentToFeeStructure,
     deleteStudentFromFeeStructure,
     getFeeStructure,
+    getFeeStructureByForm,
     getAllFeeStructures,
     importStudentsFromOtherFeeStructure,
     deleteFeeStructure

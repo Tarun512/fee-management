@@ -6,9 +6,8 @@ const FeeStructureForm = () => {
     school: '',
     branch: '',
     batch: '',
-    totalAmount: '',
-    regFees: '',
-    fine: ''
+    year: '',
+    totalFees: '',
   });
   // Handle input changes
   const handleChange = (e) => {
@@ -24,14 +23,13 @@ const FeeStructureForm = () => {
     e.preventDefault();
 
     // Check if all fields are filled
-    if (!formData.school || !formData.branch || !formData.batch || !formData.totalAmount || !formData.regFees || !formData.fine) {
+    if (!formData.school || !formData.branch || !formData.batch || !formData.totalFees) {
       alert('Please fill all the fields');
       return;
     }
-    const url = 'api/user/add-fee-structure';
-    // Simulate API POST request
+    // const url = 'api/user/add-fee-structure';
     try {
-      const response = await fetch({url}, {
+      const response = await fetch('/api/fees/create-fee-structure', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,9 +49,8 @@ const FeeStructureForm = () => {
         school: '',
         branch: '',
         batch: '',
-        totalAmount: '',
-        regFees: '',
-        fine: ''
+        year: '',
+        totalFees: '',
       });
     } catch (error) {
       console.error('Error:', error);
@@ -129,37 +126,29 @@ const FeeStructureForm = () => {
                 <option value={`${year + 5}`}>{year + 5}</option>
               </select>
             </div>
-
+            <div className="mb-4">
+              <label className="block text-gray-700">Year:</label>
+              <select 
+                name="year" 
+                value={formData.year} 
+                onChange={handleChange} 
+                required
+                className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
+              >
+                <option value="">Select Year</option>
+                <option value={`first`}>first</option>
+                <option value={`second`}>second</option>
+                <option value={`third`}>third</option>
+                <option value={`fourth`}>fourth</option>
+                <option value={`fifth`}>fifth</option>
+              </select>
+            </div>    
         <div className="mb-4">
           <label className="block text-gray-700">Total Amount:</label>
           <input
             type="number"
-            name="totalAmount"
-            value={formData.totalAmount}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Registration Fees:</label>
-          <input
-            type="number"
-            name="regFees"
-            value={formData.regFees}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700">Fine:</label>
-          <input
-            type="number"
-            name="fine"
-            value={formData.fine}
+            name="totalFees"
+            value={formData.totalFees}
             onChange={handleChange}
             required
             className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"

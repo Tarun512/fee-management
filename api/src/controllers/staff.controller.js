@@ -5,26 +5,28 @@ import { FeeStructure } from "../model/feeStructure.model.js";
 import { Staff } from "../model/staff.model.js";
 import { Payment } from "../model/payment.model.js";
 import { Student } from "../model/student.model.js";
-
+import bcrypt from 'bcrypt';
 // tested
 const registerStudents = asyncHandler(async(req, res) => {
     try {
         if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
-        const {name, email, password, role, registerationId, school, branch, batch, feeStructureName} = req.body;
-        if (!name || !email || !password || !role || !registerationId || !school || !branch || !batch || !feeStructureName) {
+        const {name, email, password, role, registerationId, school, branch, batch,year} = req.body;
+        if (!name || !email || !password || !role || !registerationId || !school || !branch || !batch || !year) {
             console.log(req.body);
             throw new ApiError(400, "Every field is required")
         }
         if (role !== "student") {
             throw new ApiError(400, "Role should be student")
         }
+        const feeStructureName = `${school}_${branch}_${batch}_${year}`;
         const feeStructure = await FeeStructure.findOne({feeStructureName: feeStructureName});
         if (!feeStructure) {
             throw new ApiError(400, "Fee structure not found")
         }
-        const student = await Student.create({name, email, password, role, registerationId, school, branch, batch});
+        
+        const student = await Student.create({name, email, password, role, registerationId, school, branch, batch, year});
         if (!student) {
             throw new ApiError(400, "Failed to create student")
         }
@@ -54,14 +56,17 @@ const editStudent = asyncHandler(async(req,res)=>{
         if(!student){
             throw new ApiError(400,"Student not found");
         }
-        const {name, email, password, role, registerationId, school, branch, batch, feeStructureName} = req.body;
-        if (!name || !email || !password || !role || !registerationId || !school || !branch || !batch || !feeStructureName) {
+        const {name, email, password, role, registerationId, school, branch, batch,year} = req.body;
+        if (!name || !email || !role || !registerationId || !school || !branch || !batch) {
             console.log(req.body);
             throw new ApiError(400, "Every field is required")
         }
         if (role !== "student") {
             throw new ApiError(400, "Role should be student")
         }
+        let hashPass = null;
+        if(password !== null) hashPass = await bcrypt.hash(password,10);
+        const feeStructureName = `${school}_${branch}_${batch}_${year}`;
         const feeStructure = await FeeStructure.findOne({feeStructureName: feeStructureName});
         if (!feeStructure) {
             throw new ApiError(400, "Fee structure not found")
@@ -79,15 +84,25 @@ const editStudent = asyncHandler(async(req,res)=>{
             await feeStructure.save({validateBeforeSave: false})
             await student.save({validateBeforeSave: false})
         }
-        const updatedStudent = await Student.findByIdAndUpdate(id,{name, email, password, role, registerationId, school, branch, batch},{new: true,runValidators: true});
-        console.log(updatedStudent);
-        
-        if (!updatedStudent) {
-            throw new ApiError(400, "Failed to update student")
+        if(hashPass === null){
+            const updatedStudent = await Student.findByIdAndUpdate(id,{name, email, role, registerationId, school, branch, batch},{new: true,runValidators: true});
+            if (!updatedStudent) {
+                throw new ApiError(400, "Failed to update student")
+            }
+            res
+            .status(201)
+            .json(new ApiResponse(201, student, "Student updated successfully"))
+        }else{
+            const updatedStudent = await Student.findByIdAndUpdate(id,{name, email, password: hashPass, role, registerationId, school, branch, batch},{new: true,runValidators: true});
+            console.log(updatedStudent);
+            
+            if (!updatedStudent) {
+                throw new ApiError(400, "Failed to update student")
+            }
+            res
+            .status(201)
+            .json(new ApiResponse(201, student, "Student updated successfully"))
         }
-        res
-        .status(201)
-        .json(new ApiResponse(201, student, "Student updated successfully"))
    } catch (error) {
         res
         .status(error.statusCode || 400)
@@ -95,13 +110,39 @@ const editStudent = asyncHandler(async(req,res)=>{
    }
 })
 // tested
-const getStudents = asyncHandler(async(req, res) => {
+const getStudent = asyncHandler(async(req, res) => {
     try {
         if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
         const regdId = req.params.id;
-        const students = await Student.find({registerationId: regdId}).select("-password");
+        console.log(regdId);
+        
+        const students = await Student.findById(regdId).select("-password");
+        console.log(students);
+        if (!students) {
+            throw new ApiError(404, "No students found")
+        }
+        res
+        .status(200)
+        .json(new ApiResponse(200, students, "Students found successfully"))
+    } catch (error) {
+        console.log(error)
+        res
+        .status(error.statusCode || 500)
+        .json({messsage: error.message || "Server Error"})
+    }
+})
+
+const getStudentByForm = asyncHandler(async(req, res) => {
+    try {
+        if(req.user.role !== "admin" && req.user.role !== "accountant"){
+            throw new ApiError(403,"Forbidden");
+        }
+        const {regNo} = req.body;
+        
+        const students = await Student.findOne({registerationId: regNo}).select("-password");
+        console.log(students);
         if (!students) {
             throw new ApiError(404, "No students found")
         }
@@ -297,8 +338,8 @@ const deleteStudent = asyncHandler(async(req, res) => {
         if(req.user.role !== "admin" && req.user.role !== "accountant"){
             throw new ApiError(403,"Forbidden");
         }
-        const regdId = req.body.registerationId;
-        const student = await Student.findOneAndDelete({registerationId: regdId});
+        const id = req.params.id;
+        const student = await Student.findByIdAndDelete(id);
         if (!student) {
             throw new ApiError(404, "Student not found")
         }
@@ -344,7 +385,8 @@ const deleteStaff = asyncHandler(async(req, res) => {
 export {
     registerStudents,
     editStudent,
-    getStudents,
+    getStudent,
+    getStudentByForm,
     getStudentsWithPendingFees,
     filterPayments,
     deleteStudent,

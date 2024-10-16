@@ -18,7 +18,7 @@ const feeStructureSchema = new Schema(
             type: Number,
             required: true
         },
-        semester: {
+        year: {
             type: String,
             required: true
         },
