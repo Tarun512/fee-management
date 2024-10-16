@@ -358,15 +358,35 @@ const deleteStudent = asyncHandler(async(req, res) => {
     }
 })
 
+const getStaff = asyncHandler(async(req,res)=>{
+    const role = req.user.role;
+    if (role !== "admin") {
+        throw new ApiError(401, "Unauthorized access")
+    }
+    try {
+        const staff = await Staff.find();
+        if (!staff) {
+            throw new ApiError(404, "Staff not found")
+        }
+        res
+        .status(200)
+        .json(new ApiResponse(200, staff, "Staff fetched successfully"))
+    } catch (error) {
+        console.log(error)
+        res
+        .status(error.statusCode || 500)
+        .json({messsage: error.message || "Server Error"})
+    }
+})
 // tested
 const deleteStaff = asyncHandler(async(req, res) => {
     const role = req.user.role;
     if (role !== "admin") {
         throw new ApiError(401, "Unauthorized access")
     }
-    const {staffName, staffEmail} = req.body;
+    const id = req.params.id
     try {
-        const staff = await Staff.findOneAndDelete({name: staffName, email: staffEmail});
+        const staff = await Staff.findByIdAndDelete(id);
         if (!staff) {
             throw new ApiError(404, "Staff not found")
         }
@@ -390,5 +410,6 @@ export {
     getStudentsWithPendingFees,
     filterPayments,
     deleteStudent,
-    deleteStaff
+    deleteStaff,
+    getStaff
 }

@@ -1,10 +1,34 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { asyncHandler } from '../../../api/utility/asyncHandler';
+import { signOutStart,signOutSuccess,signOutFailure } from '../redux/user/userSlice';
 
 function Header() {
   const { currentUser } = useSelector((state) => state.user);
-
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const handleClick = async(e)=>{
+    try {
+      e.preventDefault();
+      dispatch(signOutStart);
+      const response = await fetch('/api/auth/logout',{
+        method: 'POST',
+        headers: {
+          "Content-type": "application/json"
+        }
+      })
+      const responseData = await response.json();
+      if(responseData.success === false){
+        dispatch(signOutFailure(responseData.message));
+        return;
+      }
+      dispatch(signOutSuccess());
+      navigate("/");
+    } catch (error) {
+      dispatch(signOutFailure(error.message))
+    }
+  }
   return (
     <header className="bg-gray-100 py-4 px-6 shadow-md flex justify-between items-center">
       {/* Left side: Logo */}
@@ -21,7 +45,9 @@ function Header() {
         {currentUser ? (
           <>
             <p className="text-gray-600 text-lg">Hello, {currentUser.name}</p>
-            <button className="text-white bg-blue-500 hover:bg-blue-400 px-5 py-2 rounded-md transition duration-200">
+            <button 
+            onClick={handleClick}
+            className="text-white bg-blue-500 hover:bg-blue-400 px-5 py-2 rounded-md transition duration-200">
               Sign Out
             </button>
           </>

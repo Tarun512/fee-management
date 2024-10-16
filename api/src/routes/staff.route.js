@@ -1,5 +1,5 @@
 import express from "express";
-import { registerStudents, getStudent, getStudentsWithPendingFees, filterPayments, deleteStudent, deleteStaff, editStudent, getStudentByForm } from "../controllers/staff.controller.js";
+import { registerStudents, getStudent, getStudentsWithPendingFees, filterPayments, deleteStudent, deleteStaff, editStudent, getStudentByForm, getStaff } from "../controllers/staff.controller.js";
 import { verifyJwt } from "../middlewares/userAuthorization.js";
 
 const router = express.Router();
@@ -33,7 +33,11 @@ router
 .delete(verifyJwt, deleteStudent);
 
 router
-.route("/delete-staff")
+.route("/delete-staff/:id")
 .delete(verifyJwt, deleteStaff);
+
+router
+.route("/get-staff")
+.get(verifyJwt,getStaff);
 
 export default router;

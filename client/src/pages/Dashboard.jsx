@@ -96,6 +96,15 @@ const Dashboard = () => {
               <h2 className="text-lg font-bold mt-2">Delete Fee Payment</h2>
             </Link>
           )}
+          {role === "admin" && (
+            <Link
+              to="/staff"
+              className="bg-red-300 hover:bg-red-600 p-4 rounded-lg shadow-md flex flex-col items-center"
+            >
+              <PencilIcon className="h-8 w-8 text-green-800" />
+              <h2 className="text-lg font-bold mt-2">Edit Staff</h2>
+            </Link>
+          )}
         </div>
       )}
     </div>
