@@ -1,12 +1,11 @@
 import React, { useState } from 'react'; 
 import { useNavigate } from 'react-router-dom';
 
-const Signup = () => {
+const RegisterStaff = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
     role: '',
   });
   const [error, setError] = useState(false);
@@ -23,14 +22,8 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Ensure password and confirmPassword match
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
-      return;
-    }
-
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('/api/staff/register', {
         method: 'POST',
         headers: {
           'Content-type': 'application/json',
@@ -58,7 +51,7 @@ const Signup = () => {
         onSubmit={handleSubmit} 
         className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full"
       >
-        <h2 className="text-2xl font-bold text-center mb-6">Signup</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
 
         {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
@@ -99,18 +92,6 @@ const Signup = () => {
         </div>
 
         <div className="mb-4">
-          <label className="block text-gray-700">Confirm Password:</label>
-          <input
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-md p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
-          />
-        </div>
-
-        <div className="mb-4">
           <label className="block text-gray-700">Role:</label>
           <select 
             name="role" 
@@ -129,11 +110,14 @@ const Signup = () => {
           type="submit" 
           className="w-full bg-blue-600 text-white text-lg font-semibold py-2 rounded-md hover:bg-blue-500 transition duration-200"
         >
-          Sign up
+          Register
         </button>
+        <div>
+          {error && <p className='text-red-700 text-sm'>{error}</p>}
+        </div>
       </form>
     </div>
   );
 };
 
-export default Signup;
+export default RegisterStaff;

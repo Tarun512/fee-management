@@ -3,6 +3,8 @@ import {useNavigate} from 'react-router-dom';
 import { signInStart,signInSuccess,signInFailure,signOutStart,signOutSuccess,signOutFailure } from '../redux/user/userSlice';
 import { useDispatch,useSelector } from 'react-redux';
 const Login = () => {
+  const {error} = useSelector((state)=>state.user);
+  const [errorCode,setErrorCode] = useState(401);
   const [loginData, setLoginData] = useState({
     email: '',
     password: '',
@@ -22,7 +24,7 @@ const Login = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    dispatch(signInStart());
     // Check if all fields are filled
     if (!loginData.email || !loginData.password || !loginData.role) {
       alert('Please fill all the fields');
@@ -38,13 +40,15 @@ const Login = () => {
       });
 
       const responseData = await response.json();
+      console.log(responseData.statusCode);
+      
+      
       if (responseData.success === false) {
-        dispatch(signInFailure(responseData.message));
-        return;
+        dispatch(signInFailure(responseData.message));       
       }
       const { data } = responseData;
       if(data.role === 'student'){
-        navigate('/fee-details');
+        navigate('/student-dashboard');
       }else{
         navigate('/dashboard');
       }
@@ -109,7 +113,11 @@ const Login = () => {
         >
           Submit
         </button>
+        {/* <div>
+        {error && <p className='text-red-700 text-sm'>{error}</p>}
+        </div>   */}
       </form>
+      
     </div>
   );
 };

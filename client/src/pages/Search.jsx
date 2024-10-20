@@ -1,4 +1,3 @@
-import { json } from 'body-parser';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -419,17 +418,19 @@ function Search() {
 
       {/* Display Data */}
       <div className="mt-6">
-        <button onClick={() => { handleConvertToCSV(); downloadCsv(); }} className="bg-green-500 text-white p-2 rounded-md hover:bg-green-600">
+        {/* <button onClick={() => { handleConvertToCSV(); downloadCsv(); }} className="bg-green-500 text-white p-2 rounded-md hover:bg-green-600">
           Download in CSV
-        </button>
+        </button> */}
 
         {Array.isArray(data) && data.length > 0 && data.map((object, index) => (
           <div className="card p-4 mb-4 border border-gray-300 rounded-md shadow-sm" key={index}>
             {Object.keys(object).map((key) => (
-              <div key={key} className="mb-2">
-                <label className="font-semibold">{key}:</label>
-                <span className="ml-2">{object[key]}</span>
-              </div>
+              (key !== '_id' && key !== 'createdAt' && key !== 'updatedAt' && key !== 'password' && key !== '__v' && key !== 'refreshToken') && (
+                <div key={key} className="mb-2">
+                  <label className="font-semibold">{key}:</label>
+                  <span className="ml-2">{object[key]}</span>
+                </div>
+              )
             ))}
 
             <div className="flex justify-between mt-4">

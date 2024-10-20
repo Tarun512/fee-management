@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { asyncHandler } from '../../../api/utility/asyncHandler';
 import { signOutStart,signOutSuccess,signOutFailure } from '../redux/user/userSlice';
-
 function Header() {
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -11,7 +10,7 @@ function Header() {
   const handleClick = async(e)=>{
     try {
       e.preventDefault();
-      dispatch(signOutStart);
+      dispatch(signOutStart());
       const response = await fetch('/api/auth/logout',{
         method: 'POST',
         headers: {
@@ -33,7 +32,7 @@ function Header() {
     <header className="bg-gray-100 py-4 px-6 shadow-md flex justify-between items-center">
       {/* Left side: Logo */}
       <div className="flex items-center">
-        <Link to="/">
+        <Link to={currentUser? "/dashboard": "/"}>
           <p className="text-gray-800 text-2xl font-semibold tracking-wide hover:text-blue-500 transition duration-200">
             DRIEMS
           </p>
@@ -53,11 +52,11 @@ function Header() {
           </>
         ) : (
           <div className="flex space-x-4">
-            <Link to="/signup">
+            {/* <Link to="/signup">
               <button className="text-white bg-blue-500 hover:bg-blue-400 px-5 py-2 rounded-md transition duration-200">
                 Sign Up
               </button>
-            </Link>
+            </Link> */}
             <Link to="/login">
               <button className="text-white bg-blue-500 hover:bg-blue-400 px-5 py-2 rounded-md transition duration-200">
                 Log In

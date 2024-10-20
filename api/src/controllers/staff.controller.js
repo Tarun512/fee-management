@@ -358,6 +358,44 @@ const deleteStudent = asyncHandler(async(req, res) => {
     }
 })
 
+const registerUser = asyncHandler(async(req,res) => {
+    try {
+        const {name, email, password, role} = req.body;
+        console.log("From registerUser staff.controller",req.body);
+        if (!name || !email || !password || !role ) {
+            throw new ApiError(400, "Every field is required")
+        }
+        if(email.includes("driems.ac.in")) {
+            const dotIndex = email.indexOf('.');
+            const atIndex = email.indexOf('@');
+            const roleFromEmail = email.substring(dotIndex + 1, atIndex);
+            console.log(roleFromEmail);
+            if(role !== roleFromEmail){
+                throw new ApiError(400,"Role must match with role in email");
+            }
+            // Email verifying function call
+            const user = await Staff.create({
+                name,
+                email,
+                password,
+                role,
+            })
+            if (!user) {
+                throw new ApiError(500, "Can't create the admin or accountant user")
+            }
+            const userInstance = user.toObject()
+            delete userInstance.password;
+            return res
+            .status(201)
+            .json(new ApiResponse(201, userInstance, `${role} created successfully`))
+        }
+        
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json(error)
+    }
+})
+
 const getStaff = asyncHandler(async(req,res)=>{
     const role = req.user.role;
     if (role !== "admin") {
@@ -410,6 +448,7 @@ export {
     getStudentsWithPendingFees,
     filterPayments,
     deleteStudent,
+    registerUser,
     deleteStaff,
     getStaff
 }

@@ -98,6 +98,15 @@ const Dashboard = () => {
           )}
           {role === "admin" && (
             <Link
+              to="/register-staff"
+              className="bg-yellow-100 hover:bg-yellow-200 p-4 rounded-lg shadow-md flex flex-col items-center"
+            >
+              <PlusIcon className="h-8 w-8 text-yellow-600" />
+              <h2 className="text-lg font-bold mt-2">Register Staff</h2>
+            </Link>
+          )}
+          {role === "admin" && (
+            <Link
               to="/staff"
               className="bg-red-300 hover:bg-red-600 p-4 rounded-lg shadow-md flex flex-col items-center"
             >

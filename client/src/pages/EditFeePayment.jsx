@@ -142,6 +142,7 @@ const EditFeePaymentForm = () => {
           {/* Date */}
           <label className="block text-gray-700">Date: </label>
           <input 
+          name='date'
           type="date" 
           value={formData.date}
           onChange={handleChange}

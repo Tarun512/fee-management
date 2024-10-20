@@ -31,7 +31,7 @@ const addPayment = asyncHandler(async(req, res) => {
             throw new ApiError(400,"Payment could not be added");
         }
         student.paymentHistory.push(payment._id);
-        student.totalFeesPaid += amount;
+        student.totalFeesPaid = Number(student.totalFeesPaid) + Number(amount);
         await student.save();
         res
         .status(201)

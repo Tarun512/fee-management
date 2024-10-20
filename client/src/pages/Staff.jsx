@@ -47,10 +47,12 @@ const handleDelete = async (index) => {
         {Array.isArray(data) && data.length > 0 && data.map((object, index) => (
           <div className="card p-4 mb-4 border border-gray-300 rounded-md shadow-sm" key={index}>
             {Object.keys(object).map((key) => (
-              <div key={key} className="mb-2">
-                <label className="font-semibold">{key}:</label>
-                <span className="ml-2">{object[key]}</span>
-              </div>
+              (key !== '_id' && key !== 'createdAt' && key !== 'updatedAt' && key !== 'password' && key !== '__v' && key !== 'refreshToken') && (
+                <div key={key} className="mb-2">
+                  <label className="font-semibold">{key}:</label>
+                  <span className="ml-2">{object[key]}</span>
+                </div>
+              )
             ))}
 
             <div className="flex justify-between mt-4">

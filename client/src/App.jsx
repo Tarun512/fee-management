@@ -1,5 +1,4 @@
 import Home from './pages/Home';
-import Signup from './pages/Signup'
 import Login from './pages/Login'
 import Header from './components/Header';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -13,6 +12,8 @@ import EditFeeStructureForm from './pages/EditFeeStructure';
 import EditFeePaymentForm from './pages/EditFeePayment';
 import PrivateRoute from './components/PrivateRoute';
 import Staff from './pages/Staff';
+import RegisterStaff from './pages/RegisterStaff';
+import StudentDashBoard from './pages/StudentDashBoard';
 
 function App() {
 
@@ -21,7 +22,6 @@ function App() {
       <Header/>
       <Routes>
         <Route path='/' element={<Home/>}/>
-        <Route path='/signup' element={<Signup/>}/>
         <Route path='/login' element={<Login/>}/>
         <Route element={<PrivateRoute/>}>
           <Route path='/add-student' element={<Student/>}/>
@@ -32,7 +32,9 @@ function App() {
           <Route path='/edit-payment/:id' element={<EditFeePaymentForm/>}/>
           <Route path='/search' element={<Search/>}/>
           <Route path='/dashboard' element={<Dashboard/>}/>
+          <Route path='/register-staff' element={<RegisterStaff/>}/>
           <Route path='/staff' element={<Staff/>}/>
+          <Route path='/student-dashboard' element={<StudentDashBoard/>}/>
         </Route>
       </Routes>
     </BrowserRouter>
