@@ -34,7 +34,7 @@ function Header() {
       <div className="flex items-center">
         <Link to={currentUser? "/dashboard": "/"}>
           <p className="text-gray-800 text-2xl font-semibold tracking-wide hover:text-blue-500 transition duration-200">
-            DRIEMS
+            PMA
           </p>
         </Link>
       </div>
